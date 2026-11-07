@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.log
+.env
+.venv/
+venv/
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+RealEstateResearch/scratch/*.log
+RealEstateResearch/raw/Tax-Lien-Investing.pdf
+

@@ -1,0 +1,68 @@
+{
+  "last_sync": "2026-11-07 11:31:05",
+  "portals_checked": 9,
+  "files_downloaded": 8,
+  "new_liens_added": 1384,
+  "liens_updated": 127,
+  "total_master_liens": 3296,
+  "counties_active": [
+    "Anne Arundel County",
+    "Cecil County",
+    "Kent County",
+    "Prince George's County",
+    "Queen Anne's County",
+    "Wicomico County",
+    "Worcester County"
+  ],
+  "discovered_files": [
+    {
+      "county": "Anne Arundel County",
+      "file": "list-of-liens.pdf",
+      "url": "https://www.aacounty.org/sites/default/files/2026-05/list-of-liens.pdf",
+      "bytes": 442220
+    },
+    {
+      "county": "Wicomico County",
+      "file": "Wicomico_2026_OTC_Tax_Sale_List.pdf",
+      "url": "https://www.wicomicocounty.org/DocumentCenter/View/14387/2026-OVER-THE-COUNTER-LIST",
+      "bytes": 32091
+    },
+    {
+      "county": "Queen Anne's County",
+      "file": "Queen_Anne's_County_26511.pdf",
+      "url": "https://www.qac.org/DocumentCenter/View/26511",
+      "bytes": 179751
+    },
+    {
+      "county": "Worcester County",
+      "file": "2026-Over-Counter060226.pdf",
+      "url": "https://www.worcestermd.gov/sites/default/files/2026-Over-Counter060226.pdf",
+      "bytes": 45186
+    },
+    {
+      "county": "Cecil County",
+      "file": "Cecil_County_Week_4_Tax_Sale_Advertisement.pdf",
+      "url": "https://www.cecilcountymd.gov/DocumentCenter/View/5971",
+      "bytes": 480576
+    },
+    {
+      "county": "Caroline County",
+      "file": "Caroline_County_2026_Tax_Sale_Results.pdf",
+      "url": "https://www.carolinecounty.org/DocumentCenter/View/12385/2026-TAX-SALE-RESULTS",
+      "bytes": 19208
+    },
+    {
+      "county": "Prince George's County",
+      "file": "FY2025AssignmentList.pdf",
+      "url": "https://taxsale.princegeorgescountymd.gov/FY2025AssignmentList.pdf",
+      "bytes": 171980
+    },
+    {
+      "county": "Prince George's County",
+      "file": "FY2026AssignmentList.pdf",
+      "url": "https://taxsale.princegeorgescountymd.gov/FY2026AssignmentList.pdf",
+      "bytes": 144703
+    }
+  ],
+  "notices": []
+}
