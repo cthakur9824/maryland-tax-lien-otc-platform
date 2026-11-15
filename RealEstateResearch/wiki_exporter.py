@@ -188,5 +188,11 @@ def save_property_to_wiki(property_rec: Dict[str, Any], tax_info: Dict[str, Any]
     if os.path.exists(LOG_PATH):
         with open(LOG_PATH, "a", encoding="utf-8") as f:
             f.write(log_entry)
-            
+
+    try:
+        from mindmap_sync import refresh_all_mindmaps
+        refresh_all_mindmaps()
+    except Exception:
+        pass
+
     return file_path

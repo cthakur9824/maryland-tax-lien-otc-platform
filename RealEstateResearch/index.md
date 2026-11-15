@@ -40,6 +40,10 @@ Welcome to the Real Estate Research Knowledge Base. This index is maintained by 
 * [[Zoning]] - Land use classifications and entitlement strategies for flipping land to builders.
 
 ## 📊 Synthesis & Portfolio Strategy
+* [[Real Estate Research Master Mind Map]] - Auto-synced multi-state research mind map & Obsidian Canvas hub covering Maryland (24 counties + Carroll FY26), Colorado (Conejos/Gilpin/Gunnison), Mid-Atlantic tax deeds (VA/DE/NJ), Indiana, land playbooks, and live automation.
+* [[Conejos County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] - Complete 174-parcel due diligence, Conejos County TylerHost & 2026 SLVGIS parcel polygon enrichment, 99 sub-\$1,000 Face Bid Grade A & B deals, 40–80 acre land-flip candidates, and severed mineral (5170) trap disqualifications for Conejos County, CO.
+* [[Gilpin County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] - Complete 126-parcel due diligence, Gilpin InfoEnvoy 2026 Assessor & GIS valuation enrichment, 28 Grade A & B deals, rural acreage land-flip candidates, and mining/MRO trap disqualifications for Gilpin County, CO.
+* [[Gunnison County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] - Complete 173-parcel due diligence, Spatialest 2026 live valuation enrichment, A-F bidding grades, and proxy bid recommendations for Gunnison County, CO.
 * [[Over-The-Counter Tax Lien Sourcing Portals and Direct Links]] - Comprehensive operational directory of major auction platforms (RealAuction, GovEase, SRI, CivicSource), state databases (ALDOR, COSL, WV Auditor), and county desks for OTC tax lien certificates.
 * [[Analysis - 27040 OXLEY DR MECHANICSVILLE MD]] - Comprehensive parcel due diligence, zoning, recorded deed basis, and offer analysis for 27040 OXLEY DR, MECHANICSVILLE MD.
 * [[Regional Mid-Atlantic Tax Sale Master Directory - MD VA NJ DE]] - Comprehensive cross-border master directory comparing legal frameworks, cadastre GIS systems, and acquisition workflows across MD, VA, NJ, and DE.
@@ -85,6 +89,8 @@ Welcome to the Real Estate Research Knowledge Base. This index is maintained by 
 ---
 
 ## 📥 Ingested Sources Log
+* [2026 Gilpin County Colorado Tax Lien Sale - Full Export](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gilpin%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Full%20Export.xlsx) - Official 126-parcel Gilpin County, CO tax lien auction export enriched with live 2026 InfoEnvoy Assessor & GIS valuations (November 13, 2026).
+* [2026 Gunnison County Colorado Tax Lien Sale - Full Export](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gunnison%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Full%20Export.xlsx) - Official 173-parcel Gunnison County, CO tax lien auction export enriched with live 2026 Spatialest Assessor & GIS valuations (November 13, 2026).
 * [Delaware Monition, Sheriff Sale & Parcel Research Directory](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/md-files/Delaware.md) - Statewide monition sale overview, CourtConnect dockets, FirstMap GIS, and county directory (September 16, 2026).
 * [Maryland Tax Lien, OTC & Parcel Research Directory](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/md-files/Maryland.md) - 24-jurisdiction tax lien and OTC research directory with SDAT, MDLandRec, and iMAP links (September 16, 2026).
 * [New Jersey Tax Lien & Municipal Parcel Research Directory](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/md-files/New_Jersey.md) - 21-county index of 564 New Jersey municipal tax collectors, NJGIN Property Explorer, and municipal certificate assignments (September 16, 2026).

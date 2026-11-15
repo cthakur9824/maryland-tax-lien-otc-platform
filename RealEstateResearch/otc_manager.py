@@ -56,7 +56,7 @@ os.makedirs(UPLOADS_DIR, exist_ok=True)
 os.makedirs(SCRATCH_DIR, exist_ok=True)
 
 COUNTY_DEFAULTS = {
-    "Anne Arundel County": {"code": "ANNE", "interest": "12.0% Annual (1.0% / mo)", "redemption": "6 Months", "contact": "financeinfo@aacounty.org | (410) 222-1144"},
+    "Anne Arundel County": {"code": "ANNE", "interest": "12.0% Annual (1.0% / mo)", "redemption": "6 Months", "contact": "taxsale@aacounty.org | (410) 222-1735 / financeinfo@aacounty.org | (410) 222-1144"},
     "Kent County": {"code": "KENT", "interest": "12.0% Annual (1.0% / mo)", "redemption": "6 Months", "contact": "financeinfo@kentgov.org | (410) 778-7478"},
     "Wicomico County": {"code": "WICO", "interest": "12.0% Annual (1.0% / mo)", "redemption": "6 Months", "contact": "finance@wicomicocounty.org | (410) 548-4840"},
     "Worcester County": {"code": "WORC", "interest": "12.0% Annual (1.0% / mo)", "redemption": "6 Months", "contact": "taxes@co.worcester.md.us | (410) 632-0686"},
@@ -773,6 +773,13 @@ def import_otc_file(file_path: str, county_hint: Optional[str] = None, enrich_sd
     except Exception:
         pass
 
+    # Refresh Obsidian mindmaps & Canvas
+    try:
+        from mindmap_sync import refresh_all_mindmaps
+        refresh_all_mindmaps()
+    except Exception:
+        pass
+
     # Log to log.md
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     counties_in_batch = sorted(list(set(r["county"] for r in parsed_records)))
@@ -903,6 +910,12 @@ def sync_all_county_websites() -> Dict[str, Any]:
 
     with open(SYNC_STATUS_PATH, "w", encoding="utf-8") as f:
         json.dump(sync_report, f, indent=2)
+
+    try:
+        from mindmap_sync import refresh_all_mindmaps
+        refresh_all_mindmaps()
+    except Exception:
+        pass
 
     return sync_report
 

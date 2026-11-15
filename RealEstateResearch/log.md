@@ -154,3 +154,132 @@ This is a chronological record of all wiki operations (ingests, queries, and mai
   2. [`app.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/app.py) — Added `keep_alive_self_ping_worker()` (pings `RENDER_EXTERNAL_URL/health` every 10 minutes) and `do_HEAD()` support for UptimeRobot / BetterStack monitors.
   3. [`.github/workflows/keep_alive.yml`](file:///c:/Obsedian/RealEstateResearch/.github/workflows/keep_alive.yml) — Scheduled GitHub Action (`*/10 * * * *`) to ping the Render `/health` endpoint from outside.
   4. [`.gitignore`](file:///c:/Obsedian/RealEstateResearch/.gitignore) — Excluded temporary logs, bytecode, and oversized raw PDFs for clean GitHub pushes.
+
+- **2026-11-08 18:59:16** | `INGESTION`: Imported OTC file `list-of-liens.pdf` (80 parsed, 0 new, 80 updated) across Anne Arundel County.
+- **2026-11-08 18:59:17** | `INGESTION`: Imported OTC file `Wicomico_2026_OTC_Tax_Sale_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-08 18:59:18** | `INGESTION`: Imported OTC file `Queen_Anne's_County_26511.pdf` (1 parsed, 1 new, 0 updated) across Queen Anne's County.
+- **2026-11-08 18:59:21** | `INGESTION`: Imported OTC file `2026-Over-Counter060226.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-08 18:59:23** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-08 18:59:27** | `INGESTION`: Imported OTC file `FY2025AssignmentList.pdf` (116 parsed, 0 new, 116 updated) across Prince George's County.
+- **2026-11-08 18:59:27** | `INGESTION`: Imported OTC file `FY2026AssignmentList.pdf` (91 parsed, 0 new, 91 updated) across Prince George's County.
+- **2026-11-08 18:59:28** | `INGESTION`: Imported OTC file `Anne-Arundell-list-of-liens.pdf` (105 parsed, 0 new, 105 updated) across Anne Arundel County.
+- **2026-11-08 18:59:28** | `INGESTION`: Imported OTC file `Kent County 2026 Tax Sale - OTC 6.9.26.pdf` (54 parsed, 0 new, 54 updated) across Kent County.
+- **2026-11-08 18:59:28** | `INGESTION`: Imported OTC file `Wicomico_County_Over_the_Counter_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-08 18:59:28** | `INGESTION`: Imported OTC file `Worcester_County_Over_the_Counter_Lien_from_Tax.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-08 18:59:29** | `INGESTION`: Imported OTC file `Queen_Anne_s_County_Available_Over_the_Counter_Tax.pdf` (2 parsed, 2 new, 0 updated) across Queen Anne's County.
+- **2026-11-08 18:59:30** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-09 06:59:33** | `INGESTION`: Imported OTC file `list-of-liens.pdf` (80 parsed, 0 new, 80 updated) across Anne Arundel County.
+- **2026-11-09 06:59:34** | `INGESTION`: Imported OTC file `Wicomico_2026_OTC_Tax_Sale_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-09 06:59:36** | `INGESTION`: Imported OTC file `Queen_Anne's_County_26511.pdf` (1 parsed, 1 new, 0 updated) across Queen Anne's County.
+- **2026-11-09 06:59:37** | `INGESTION`: Imported OTC file `2026-Over-Counter060226.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-09 06:59:40** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-09 06:59:49** | `INGESTION`: Imported OTC file `FY2025AssignmentList.pdf` (116 parsed, 0 new, 116 updated) across Prince George's County.
+- **2026-11-09 06:59:50** | `INGESTION`: Imported OTC file `FY2026AssignmentList.pdf` (91 parsed, 0 new, 91 updated) across Prince George's County.
+- **2026-11-09 06:59:51** | `INGESTION`: Imported OTC file `Anne-Arundell-list-of-liens.pdf` (105 parsed, 0 new, 105 updated) across Anne Arundel County.
+- **2026-11-09 06:59:51** | `INGESTION`: Imported OTC file `Kent County 2026 Tax Sale - OTC 6.9.26.pdf` (54 parsed, 0 new, 54 updated) across Kent County.
+- **2026-11-09 06:59:52** | `INGESTION`: Imported OTC file `Wicomico_County_Over_the_Counter_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-09 06:59:52** | `INGESTION`: Imported OTC file `Worcester_County_Over_the_Counter_Lien_from_Tax.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-09 06:59:52** | `INGESTION`: Imported OTC file `Queen_Anne_s_County_Available_Over_the_Counter_Tax.pdf` (2 parsed, 2 new, 0 updated) across Queen Anne's County.
+- **2026-11-09 06:59:53** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-09 18:59:56** | `INGESTION`: Imported OTC file `list-of-liens.pdf` (80 parsed, 0 new, 80 updated) across Anne Arundel County.
+- **2026-11-09 18:59:57** | `INGESTION`: Imported OTC file `Wicomico_2026_OTC_Tax_Sale_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-09 18:59:59** | `INGESTION`: Imported OTC file `Queen_Anne's_County_26511.pdf` (1 parsed, 1 new, 0 updated) across Queen Anne's County.
+- **2026-11-09 19:00:02** | `INGESTION`: Imported OTC file `2026-Over-Counter060226.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-09 19:00:06** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-09 19:00:11** | `INGESTION`: Imported OTC file `FY2025AssignmentList.pdf` (116 parsed, 0 new, 116 updated) across Prince George's County.
+- **2026-11-09 19:00:11** | `INGESTION`: Imported OTC file `FY2026AssignmentList.pdf` (91 parsed, 0 new, 91 updated) across Prince George's County.
+- **2026-11-09 19:00:12** | `INGESTION`: Imported OTC file `Anne-Arundell-list-of-liens.pdf` (105 parsed, 0 new, 105 updated) across Anne Arundel County.
+- **2026-11-09 19:00:13** | `INGESTION`: Imported OTC file `Kent County 2026 Tax Sale - OTC 6.9.26.pdf` (54 parsed, 0 new, 54 updated) across Kent County.
+- **2026-11-09 19:00:13** | `INGESTION`: Imported OTC file `Wicomico_County_Over_the_Counter_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-09 19:00:14** | `INGESTION`: Imported OTC file `Worcester_County_Over_the_Counter_Lien_from_Tax.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-09 19:00:14** | `INGESTION`: Imported OTC file `Queen_Anne_s_County_Available_Over_the_Counter_Tax.pdf` (2 parsed, 2 new, 0 updated) across Queen Anne's County.
+- **2026-11-09 19:00:16** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-10 07:00:19** | `INGESTION`: Imported OTC file `list-of-liens.pdf` (80 parsed, 0 new, 80 updated) across Anne Arundel County.
+- **2026-11-10 07:00:22** | `INGESTION`: Imported OTC file `Wicomico_2026_OTC_Tax_Sale_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-10 07:00:23** | `INGESTION`: Imported OTC file `Queen_Anne's_County_26511.pdf` (1 parsed, 1 new, 0 updated) across Queen Anne's County.
+- **2026-11-10 07:00:24** | `INGESTION`: Imported OTC file `2026-Over-Counter060226.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-10 07:00:28** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-10 07:00:41** | `INGESTION`: Imported OTC file `FY2025AssignmentList.pdf` (116 parsed, 0 new, 116 updated) across Prince George's County.
+- **2026-11-10 07:00:42** | `INGESTION`: Imported OTC file `FY2026AssignmentList.pdf` (91 parsed, 0 new, 91 updated) across Prince George's County.
+- **2026-11-10 07:00:43** | `INGESTION`: Imported OTC file `Anne-Arundell-list-of-liens.pdf` (105 parsed, 0 new, 105 updated) across Anne Arundel County.
+- **2026-11-10 07:00:43** | `INGESTION`: Imported OTC file `Kent County 2026 Tax Sale - OTC 6.9.26.pdf` (54 parsed, 0 new, 54 updated) across Kent County.
+- **2026-11-10 07:00:44** | `INGESTION`: Imported OTC file `Wicomico_County_Over_the_Counter_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-10 07:00:44** | `INGESTION`: Imported OTC file `Worcester_County_Over_the_Counter_Lien_from_Tax.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-10 07:00:44** | `INGESTION`: Imported OTC file `Queen_Anne_s_County_Available_Over_the_Counter_Tax.pdf` (2 parsed, 2 new, 0 updated) across Queen Anne's County.
+- **2026-11-10 07:00:46** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-10 19:00:49** | `INGESTION`: Imported OTC file `list-of-liens.pdf` (80 parsed, 0 new, 80 updated) across Anne Arundel County.
+- **2026-11-10 19:00:51** | `INGESTION`: Imported OTC file `Wicomico_2026_OTC_Tax_Sale_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-10 19:00:52** | `INGESTION`: Imported OTC file `Queen_Anne's_County_26511.pdf` (1 parsed, 1 new, 0 updated) across Queen Anne's County.
+- **2026-11-10 19:00:56** | `INGESTION`: Imported OTC file `2026-Over-Counter060226.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-10 19:00:58** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-10 19:01:02** | `INGESTION`: Imported OTC file `FY2025AssignmentList.pdf` (116 parsed, 0 new, 116 updated) across Prince George's County.
+- **2026-11-10 19:01:03** | `INGESTION`: Imported OTC file `FY2026AssignmentList.pdf` (91 parsed, 0 new, 91 updated) across Prince George's County.
+- **2026-11-10 19:01:04** | `INGESTION`: Imported OTC file `Anne-Arundell-list-of-liens.pdf` (105 parsed, 0 new, 105 updated) across Anne Arundel County.
+- **2026-11-10 19:01:04** | `INGESTION`: Imported OTC file `Kent County 2026 Tax Sale - OTC 6.9.26.pdf` (54 parsed, 0 new, 54 updated) across Kent County.
+- **2026-11-10 19:01:05** | `INGESTION`: Imported OTC file `Wicomico_County_Over_the_Counter_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-10 19:01:06** | `INGESTION`: Imported OTC file `Worcester_County_Over_the_Counter_Lien_from_Tax.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-10 19:01:06** | `INGESTION`: Imported OTC file `Queen_Anne_s_County_Available_Over_the_Counter_Tax.pdf` (2 parsed, 2 new, 0 updated) across Queen Anne's County.
+- **2026-11-10 19:01:08** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+
+## [2026-11-13] ingest | Gunnison County Colorado 2026 Tax Lien Sale (173 Parcels)
+* **Source**: [`2026 Gunnison County Colorado Tax Lien Sale - Full Export.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gunnison%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Full%20Export.xlsx)
+* **Action**: Built and executed [`analyze_gunnison_2026.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/scratch/analyze_gunnison_2026.py) to query the live 2026 Gunnison County Assessor Spatialest GeoServer WFS (`gunnison-co:Taxparcelassessor`) and Gunnison County GIS FeatureServer for all 173 parcels, recovering missing Situs Addresses, Land Values, Improvement Values, Total Actual Values (\$$61.25\text{M}$ total across \$$777.3\text{k}$ in face liens), Acreage, Deed History, and Restriction Notes.
+* **Outputs Created**:
+  1. [[Gunnison County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] ([`Gunnison County Colorado 2026 Tax Lien Sale - Underwriting Matrix.md`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/tax-sales/Gunnison%20County%20Colorado%202026%20Tax%20Lien%20Sale%20-%20Underwriting%20Matrix.md))
+  2. [`Gunnison_County_CO_2026_Tax_Lien_Due_Diligence_Master.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Gunnison_County_CO_2026_Tax_Lien_Due_Diligence_Master.xlsx)
+  3. [`Gunnison_County_CO_2026_Tax_Lien_Due_Diligence_Master.csv`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Gunnison_County_CO_2026_Tax_Lien_Due_Diligence_Master.csv)
+  4. Updated [`index.md`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/index.md).
+
+## [2026-11-13] query-synthesis | Top 25 Grade A Pre-Bid Audit & Ready-to-Upload Bid Sheet
+* **Action**: Audited all 25 parcels in the Top 25 Grade A Gunnison County list for deed history, improvement-to-land ratios, repeat-owner concentration (`BAKER`, `OZYP`, `SANTOS`), and condo/vacant nuances, and generated [`2026 Gunnison County Colorado Tax Lien Sale - Ready_To_Bid_Top25.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gunnison%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Ready_To_Bid_Top25.xlsx) with `Direct Bid` and `Proxy Bid` columns populated per auction upload rules.
+
+## [2026-11-13] query-synthesis | $5,000 Budget Bid Plan & Telegram Bot Gunnison Integration
+* **Action**:
+  1. Created the **$5,000 Budget Gunnison County Bid Plan** (`$4,931.14` total Direct Bids / `$5,000.00` capped Max Proxy Bids across 5 high-equity improved parcels, backed by `$1,800,560` in 2026 actual property value and generating `$690.36/yr` in 14% statutory interest) and generated [`2026 Gunnison County Colorado Tax Lien Sale - Ready_To_Bid_5K_Budget.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gunnison%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Ready_To_Bid_5K_Budget.xlsx).
+  2. Upgraded [`real_estate_telegram_bot.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/real_estate_telegram_bot.py) with `/5k`, `/budget`, `/gunnison [query]`, and direct `R0...`/`M0...` Gunnison parcel lookup support, and started the live background daemon via [`app.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/app.py).
+
+## [2026-11-13] query-synthesis | Gunnison County Agricultural & 35+ Acre Ranch Land Flip Analysis
+* **Action**: Audited all 15 Assessor-classified `Agricultural` / `Mixed Use` parcels and 17 large-acreage (`>= 3.0 ac`) tracts in the Gunnison County 2026 tax sale export, uncovering the **Colorado Statutory Agricultural Grazing Assessment anomaly (C.R.S. § 39-1-103(5)(a))** on parcels like **`R072243`** (35.02 acres in Ohio Creek Valley, `$14,000` Ag tax roll value, **sold Oct 2018 for `$320,000`**, `$233.03` lien) and **`R071510`/`R071511`/`R033389`** (223.2 contiguous acres on State Hwy 149, **sold Apr 2017 for `$320,000`**, `$769.54` combined liens). Updated [`gunnison_2026_graded_deals.json`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/scratch/gunnison_2026_graded_deals.json) and [[Gunnison County Colorado 2026 Tax Lien Sale - Underwriting Matrix]].
+
+
+## [2026-11-13] ingest | Gilpin County Colorado 2026 Tax Lien Sale (126 Parcels)
+- **Source**: [`2026 Gilpin County Colorado Tax Lien Sale - Full Export.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gilpin%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Full%20Export.xlsx)
+- **Action**: Enriched all 126 parcels (70 `R*` Real Property accounts and 56 `N*` Natural Resource / Mining Claim accounts) against Gilpin County's live 2026 InfoEnvoy Assessor API (`https://gilpin.infoenvoy.net/Details/DetailsGetValuePanelDetail`) and Gilpin County GIS (`GilpinCountyCAMAParcels_20260501` & `Legacy_Tax_Parcels_of_Gilpin_County_Colorado`).
+- **Outputs**:
+  - Created [`Gilpin_County_CO_2026_Tax_Lien_Due_Diligence_Master.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Gilpin_County_CO_2026_Tax_Lien_Due_Diligence_Master.xlsx), [`Gilpin_County_CO_2026_Tax_Lien_Due_Diligence_Master.csv`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Gilpin_County_CO_2026_Tax_Lien_Due_Diligence_Master.csv), and [`2026 Gilpin County Colorado Tax Lien Sale - Ready_To_Bid_Best_Deals.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gilpin%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Ready_To_Bid_Best_Deals.xlsx).
+  - Created wiki page [[Gilpin County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] ([`Gilpin County Colorado 2026 Tax Lien Sale - Underwriting Matrix.md`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/tax-sales/Gilpin%20County%20Colorado%202026%20Tax%20Lien%20Sale%20-%20Underwriting%20Matrix.md)).
+  - Upgraded [`real_estate_telegram_bot.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/real_estate_telegram_bot.py) with `/gilpin` and live Gilpin parcel lookup.
+
+## [2026-11-13] query-synthesis | Multi-State & Multi-County Intelligent Parcel Search Router + Conejos County CO 2026 Enrichment
+- Built [`multi_state_parcel_engine.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/multi_state_parcel_engine.py) and integrated it into [`real_estate_telegram_bot.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/real_estate_telegram_bot.py).
+- Enriched all 174 parcels from [`2026 Conejos County Colorado Tax Lien Sale - Full Export.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Conejos%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Full%20Export.xlsx) via live Conejos County Treasurer TylerHost (`conejoscountyco-treasurer.tylerhost.net`) into [`conejos_2026_graded_deals.json`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/scratch/conejos_2026_graded_deals.json), including `R017432` (Sale #183, `SMITH GWEN`, `1/2 INT MR ONLY IN S1/2 SE1/4 2-33-8`, Severed Mineral Interest `5170`, Actual Value \$235, Grade F Trap).
+- Prevented Colorado (`R*`, `N*`, `M*`, `P*`) and Indiana parcel IDs from falling back to Maryland SDAT.
+
+## [2026-11-13] query-synthesis | Colorado 2026 Sub-$1,000 Face Bid Grade A & B Flip Deals (Conejos, Gilpin, Gunnison)
+- Created [`Conejos_County_CO_2026_Tax_Lien_Due_Diligence_Master.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Conejos_County_CO_2026_Tax_Lien_Due_Diligence_Master.xlsx) and [`Colorado_2026_Under_1000_Face_Grade_A_B_Flip_Deals.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Colorado_2026_Under_1000_Face_Grade_A_B_Flip_Deals.xlsx).
+- Created [`Conejos County Colorado 2026 Tax Lien Sale - Underwriting Matrix.md`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/tax-sales/Conejos%20County%20Colorado%202026%20Tax%20Lien%20Sale%20-%20Underwriting%20Matrix.md) and updated [`index.md`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/index.md).
+
+- **2026-11-14 11:16:47** | `INGESTION`: Imported OTC file `list-of-liens.pdf` (80 parsed, 0 new, 80 updated) across Anne Arundel County.
+- **2026-11-14 11:16:49** | `INGESTION`: Imported OTC file `Wicomico_2026_OTC_Tax_Sale_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-14 11:16:51** | `INGESTION`: Imported OTC file `Queen_Anne's_County_26511.pdf` (1 parsed, 1 new, 0 updated) across Queen Anne's County.
+- **2026-11-14 11:16:53** | `INGESTION`: Imported OTC file `2026-Over-Counter060226.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-14 11:16:56** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+- **2026-11-14 11:17:01** | `INGESTION`: Imported OTC file `FY2025AssignmentList.pdf` (116 parsed, 0 new, 116 updated) across Prince George's County.
+- **2026-11-14 11:17:01** | `INGESTION`: Imported OTC file `FY2026AssignmentList.pdf` (91 parsed, 0 new, 91 updated) across Prince George's County.
+- **2026-11-14 11:17:02** | `INGESTION`: Imported OTC file `Anne-Arundell-list-of-liens.pdf` (105 parsed, 0 new, 105 updated) across Anne Arundel County.
+- **2026-11-14 11:17:03** | `INGESTION`: Imported OTC file `Kent County 2026 Tax Sale - OTC 6.9.26.pdf` (54 parsed, 0 new, 54 updated) across Kent County.
+- **2026-11-14 11:17:05** | `INGESTION`: Imported OTC file `Wicomico_County_Over_the_Counter_List.pdf` (42 parsed, 0 new, 42 updated) across Wicomico County.
+- **2026-11-14 11:17:06** | `INGESTION`: Imported OTC file `Worcester_County_Over_the_Counter_Lien_from_Tax.pdf` (5 parsed, 0 new, 5 updated) across Worcester County.
+- **2026-11-14 11:17:06** | `INGESTION`: Imported OTC file `Queen_Anne_s_County_Available_Over_the_Counter_Tax.pdf` (2 parsed, 2 new, 0 updated) across Queen Anne's County.
+- **2026-11-14 11:17:09** | `INGESTION`: Imported OTC file `Cecil_County_Week_4_Tax_Sale_Advertisement.pdf` (587 parsed, 587 new, 0 updated) across Cecil County.
+
+## [2026-11-14] query-synthesis | Anne Arundel County, MD Grade A Over-The-Counter (OTC) Tax Lien Matrix
+- Exported 30 viable Grade A Anne Arundel County OTC tax lien certificates (Title Confluence Score $\ge 90/100$, LTV $< 30\%$) to [`Anne_Arundel_County_MD_2026_Grade_A_OTC_Deals.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Anne_Arundel_County_MD_2026_Grade_A_OTC_Deals.xlsx).
+
+- **2026-11-14 20:40:30** | `QUERY-SYNTHESIS`: Extracted official Anne Arundel County Tax Sale OTC contact info (`taxsale@aacounty.org`, `(410) 222-1735`, General Finance `financeinfo@aacounty.org`, `(410) 222-1144`, and MUNIS portal `https://aacounty.munisselfservice.com/citizens/default.aspx`) from `raw/Anne-Arundell-list-of-liens.pdf` and updated `Deal Analysis - Anne Arundel County Tax Liens 2026.md` and `otc_manager.py`.
+
+- **2026-11-14 21:50:00** | `INGESTION`: Downloaded and audited live Carroll County FY 2026 Tax Sale Results (`raw/Carroll_FY26_Results.pdf`), 2026 Terms of Sale (`raw/Carroll_Terms_2026.pdf`), and 2026 Notice (`raw/Carroll_Notice_2026.pdf`). Identified all 3 FY26 County-Held (`Bidder #1`) parcels (`04010914`, `04015517`, `14430541`), enriched via live MD iMAP/SDAT and Title Engine, and updated `Carroll County Land and Tax Sale Market.md`.
+
+- **2026-11-15 08:43:30** | `SYNTHESIS`: Created [`mindmap_sync.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/mindmap_sync.py) and generated synchronized Obsidian Canvas ([`Real Estate Research Mindmap.canvas`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/Real%20Estate%20Research%20Mindmap.canvas)) + Master Mindmap ([`Real Estate Research Master Mind Map.md`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/synthesis/Real%20Estate%20Research%20Master%20Mind%20Map.md)) + refreshed [`Maryland Mind Map.md`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/markets/Maryland%20Mind%20Map.md). Wired auto-sync into `app.py` (startup), `otc_manager.py` (12h crawl & imports), and `wiki_exporter.py` (parcel dossiers).
+
+- **2026-11-15 11:34:00** | `MAINTENANCE`: Hardened 24/7 Render deployment & Telegram bot resilience across [`app.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/app.py), [`real_estate_telegram_bot.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/real_estate_telegram_bot.py), [`.github/workflows/keep_alive.yml`](file:///c:/Obsedian/RealEstateResearch/.github/workflows/keep_alive.yml), and [`.gitignore`](file:///c:/Obsedian/RealEstateResearch/.gitignore). Added self-healing `bot_supervisor_worker()` watchdog, `/ping` & telemetry-rich `/health`, `deleteWebhook` startup clear, `409 Conflict` backoff, 4-min internal self-ping + 5-min GitHub Actions keep-alive cron.

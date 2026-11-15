@@ -1,0 +1,650 @@
+{
+  "nodes": [
+    {
+      "id": "grp_hub",
+      "type": "group",
+      "x": -290,
+      "y": -190,
+      "width": 580,
+      "height": 380,
+      "label": "REAL ESTATE RESEARCH MASTER HUB",
+      "color": "5"
+    },
+    {
+      "id": "hub_core",
+      "type": "text",
+      "x": -265,
+      "y": -160,
+      "width": 530,
+      "height": 220,
+      "text": "# Real Estate Research Command Hub\n**Last Synced:** `2026-11-15 11:33` *(Auto-Updated)*\n\n- **Wiki Knowledge Base:** `73` synthesized notes\n- **Master Excel/PDF Data:** `19` workbooks | `38` county PDFs\n- **Maryland OTC Portfolio:** `1,003` unique parcels across 7 active counties + Carroll FY26\n- **Colorado 2026 Auctions:** `473` enriched parcels (`131` Sub-$1k Grade A/B flips)\n- **Guardrails:** `$333`/deal MD starter | `$5,000` CO auction budget | `14%` CO / `10%-20%` MD yield",
+      "color": "5"
+    },
+    {
+      "id": "hub_index",
+      "type": "file",
+      "file": "index.md",
+      "x": -265,
+      "y": 80,
+      "width": 255,
+      "height": 85,
+      "color": "5"
+    },
+    {
+      "id": "hub_master_md",
+      "type": "file",
+      "file": "wiki/synthesis/Real Estate Research Master Mind Map.md",
+      "x": 10,
+      "y": 80,
+      "width": 255,
+      "height": 85,
+      "color": "5"
+    },
+    {
+      "id": "grp_md",
+      "type": "group",
+      "x": -1240,
+      "y": -900,
+      "width": 880,
+      "height": 740,
+      "label": "MARYLAND 24-COUNTY TAX LIENS & LIVE OTC",
+      "color": "2"
+    },
+    {
+      "id": "md_overview",
+      "type": "text",
+      "x": -1215,
+      "y": -870,
+      "width": 410,
+      "height": 240,
+      "text": "## Maryland OTC Inventory (1,003 Unique Parcels)\n- **Cecil:** `587` parcels (`taxsale@cecilcountymd.gov` | `410-996-5385`)\n- **Prince George's:** `207` (`TAXSALE@CO.PG.MD.US` | `301-952-3948`, **20% non-owner**)\n- **Anne Arundel:** `106` (`29` viable Grade A, `64` Grade B)\n- **Kent:** `54` (`7` Tier-1 Alpha | `financeinfo@kentgov.org`)\n- **Wicomico:** `42` (`finance@wicomicocounty.org`)\n- **Worcester:** `5` | **Queen Anne's:** `2`\n- **Baltimore City:** Sub-$333 OTC (`18%` interest, `buyintobmore.baltimorecity.gov`)",
+      "color": "2"
+    },
+    {
+      "id": "md_aa_picks",
+      "type": "text",
+      "x": -785,
+      "y": -870,
+      "width": 400,
+      "height": 275,
+      "text": "## Anne Arundel OTC Direct Buy Picks\n- **Email:** `taxsale@aacounty.org` | **Tel:** `(410) 222-1735`\n- **Finance:** `financeinfo@aacounty.org` | `(410) 222-1144`\n- **Sub-$1k Picks:**\n  - `#749` (`500202604103` Henry Ave) \u2014 **$383.57** / $30.9k W2 (1.24% LTV)\n  - `#58` (`188090034122` Galesville slip) \u2014 **$436.99** / $28.7k (1.52% LTV)\n  - `#283` (`311990041926` 843 W Benfield Rd) \u2014 **$901.75**\n- **Single-Parcel Commercial:** `#528` (`400001785100` Dare St Odenton, **$1,974.30** / $450.8k = **0.44% LTV**), `#742` (**$1,011.58**), `#747` (**$1,845.76**)\n- **7-Lot Assembly:** `#430, #434-#439` (145-169 Forest Rd, **$8,818.39** total / $654.2k assmt)",
+      "color": "2"
+    },
+    {
+      "id": "md_carroll",
+      "type": "text",
+      "x": -1215,
+      "y": -610,
+      "width": 410,
+      "height": 215,
+      "text": "## Carroll County FY26 Live Tax Sale (June 30, 2026)\n- **Direct Clerk Email:** `bgesell@carrollcountymd.gov` | `(410) 386-2965`\n- **Policy:** No public OTC cart; **3 parcels** struck off to `Bidder #1: Carroll County` (`14%` non-owner interest; foreclosure opens Dec 30, 2026):\n  1. `04010914` Old Finksburg Rd (`1.76 ac R-400`): **$16,790.94** / $187.6k (8.95% LTV)\n  2. `04015517` 2235 Carrollton Rd (`0.772 ac Agric`): **$13,422.28** / $136.9k (9.80% LTV)\n  3. `14430541` Dorsey Ln (`0.694 ac Par C`): **$1,168.93** / $3.4k *(residual caution)*",
+      "color": "2"
+    },
+    {
+      "id": "md_file_mindmap",
+      "type": "file",
+      "file": "wiki/markets/Maryland Mind Map.md",
+      "x": -785,
+      "y": -575,
+      "width": 195,
+      "height": 85,
+      "color": "2"
+    },
+    {
+      "id": "md_file_24",
+      "type": "file",
+      "file": "wiki/synthesis/Maryland Tax Lien OTC and Surplus Directory - 24 Jurisdictions.md",
+      "x": -580,
+      "y": -575,
+      "width": 195,
+      "height": 85,
+      "color": "2"
+    },
+    {
+      "id": "md_file_aa_doc",
+      "type": "file",
+      "file": "wiki/synthesis/Deal Analysis - Anne Arundel County Tax Liens 2026.md",
+      "x": -785,
+      "y": -475,
+      "width": 195,
+      "height": 85,
+      "color": "2"
+    },
+    {
+      "id": "md_file_carroll_doc",
+      "type": "file",
+      "file": "wiki/markets/Carroll County Land and Tax Sale Market.md",
+      "x": -580,
+      "y": -475,
+      "width": 195,
+      "height": 85,
+      "color": "2"
+    },
+    {
+      "id": "md_file_master_xlsx",
+      "type": "file",
+      "file": "raw/Maryland_24_Counties_Tax_Lien_OTC_Master_2026.xlsx",
+      "x": -1215,
+      "y": -375,
+      "width": 270,
+      "height": 95,
+      "color": "2"
+    },
+    {
+      "id": "md_file_aa_xlsx",
+      "type": "file",
+      "file": "raw/Anne_Arundel_County_MD_2026_Grade_A_OTC_Deals.xlsx",
+      "x": -930,
+      "y": -375,
+      "width": 270,
+      "height": 95,
+      "color": "2"
+    },
+    {
+      "id": "md_file_screen",
+      "type": "file",
+      "file": "wiki/tax-sales/Maryland OTC Tax Liens - Title Confluence Screen.md",
+      "x": -645,
+      "y": -375,
+      "width": 260,
+      "height": 95,
+      "color": "2"
+    },
+    {
+      "id": "grp_co",
+      "type": "group",
+      "x": 360,
+      "y": -900,
+      "width": 900,
+      "height": 740,
+      "label": "COLORADO 2026 TAX LIEN AUCTIONS (14% INTEREST | 3-YR REDEMPTION)",
+      "color": "4"
+    },
+    {
+      "id": "co_summary",
+      "type": "text",
+      "x": 385,
+      "y": -870,
+      "width": 420,
+      "height": 235,
+      "text": "## Colorado 2026 Enriched Portfolio (`473` Parcels)\n- **Conejos County:** `174` parcels (`78` A, `53` B | `99` Sub-$1k A/B) \u2014 Live TylerHost + 2026 SLVGIS polygon centroids\n- **Gilpin County:** `126` parcels (`21` A, `7` B | `15` Sub-$1k A/B) \u2014 Live InfoEnvoy Assessor + GIS (`R*` real vs `N*` MRO)\n- **Gunnison County:** `173` parcels (`87` A, `12` B | `17` Sub-$1k A/B) \u2014 `$61.25M` actual value on `$777.3k` face bids\n- **Combined Sub-$1k Grade A/B Flip Queue:** **`131` deals**\n- **Dossier Links:** Every parcel includes Assessor Card, Treasurer Tax Account & GPS Maps Pin.",
+      "color": "4"
+    },
+    {
+      "id": "co_strategy",
+      "type": "text",
+      "x": 825,
+      "y": -870,
+      "width": 410,
+      "height": 235,
+      "text": "## $5k Budget, Ag Ranch & Trap Rules\n- **Gunnison $5k Budget Plan:** 5 Grade A improved lots (`$4,931.14` direct / `$5,000` max proxy) backed by `$1.80M` value (`$690/yr` @ 14%)\n- **Ag Grazing Assessment Anomaly (C.R.S. \u00a7 39-1-103(5)(a)):**\n  - `R072243` (35.02 ac Ohio Creek Valley): `$14k` Ag roll / **$320k sold comp** (`$233.03` lien)\n  - `R071510 / R071511 / R033389` (223.2 ac Hwy 149): **$320k comp** (`$769.54` combined)\n- **Conejos 40-80 Ac Flips & Trap Avoidance:** Reject Conejos `5170` severed mineral (`R017432`) & Gilpin `N*` mining claims (`0` surface acres).",
+      "color": "4"
+    },
+    {
+      "id": "co_file_gunnison",
+      "type": "file",
+      "file": "wiki/tax-sales/Gunnison County Colorado 2026 Tax Lien Sale - Underwriting Matrix.md",
+      "x": 385,
+      "y": -615,
+      "width": 275,
+      "height": 95,
+      "color": "4"
+    },
+    {
+      "id": "co_file_gilpin",
+      "type": "file",
+      "file": "wiki/tax-sales/Gilpin County Colorado 2026 Tax Lien Sale - Underwriting Matrix.md",
+      "x": 675,
+      "y": -615,
+      "width": 275,
+      "height": 95,
+      "color": "4"
+    },
+    {
+      "id": "co_file_conejos",
+      "type": "file",
+      "file": "wiki/tax-sales/Conejos County Colorado 2026 Tax Lien Sale - Underwriting Matrix.md",
+      "x": 965,
+      "y": -615,
+      "width": 270,
+      "height": 95,
+      "color": "4"
+    },
+    {
+      "id": "co_xlsx_under1k",
+      "type": "file",
+      "file": "raw/Colorado_2026_Under_1000_Face_Grade_A_B_Flip_Deals.xlsx",
+      "x": 385,
+      "y": -495,
+      "width": 275,
+      "height": 95,
+      "color": "4"
+    },
+    {
+      "id": "co_xlsx_5k",
+      "type": "file",
+      "file": "raw/2026 Gunnison County Colorado Tax Lien Sale - Ready_To_Bid_5K_Budget.xlsx",
+      "x": 675,
+      "y": -495,
+      "width": 275,
+      "height": 95,
+      "color": "4"
+    },
+    {
+      "id": "co_xlsx_top25",
+      "type": "file",
+      "file": "raw/2026 Gunnison County Colorado Tax Lien Sale - Ready_To_Bid_Top25.xlsx",
+      "x": 965,
+      "y": -495,
+      "width": 270,
+      "height": 95,
+      "color": "4"
+    },
+    {
+      "id": "co_xlsx_conejos_m",
+      "type": "file",
+      "file": "raw/Conejos_County_CO_2026_Tax_Lien_Due_Diligence_Master.xlsx",
+      "x": 385,
+      "y": -375,
+      "width": 420,
+      "height": 95,
+      "color": "4"
+    },
+    {
+      "id": "co_xlsx_gilpin_m",
+      "type": "file",
+      "file": "raw/2026 Gilpin County Colorado Tax Lien Sale - Ready_To_Bid_Best_Deals.xlsx",
+      "x": 820,
+      "y": -375,
+      "width": 415,
+      "height": 95,
+      "color": "4"
+    },
+    {
+      "id": "grp_reg",
+      "type": "group",
+      "x": -1240,
+      "y": 260,
+      "width": 880,
+      "height": 620,
+      "label": "MID-ATLANTIC DEEDS (VA/DE/NJ), INDIANA & NATIONWIDE OTC",
+      "color": "6"
+    },
+    {
+      "id": "reg_summary",
+      "type": "text",
+      "x": -1215,
+      "y": 290,
+      "width": 410,
+      "height": 240,
+      "text": "## Multi-State Tax Sale & Land Corridors\n- **Virginia (95 Counties / 38 Cities):** Judicial (`Va Code \u00a7 58.1-3965`) & Nonjudicial (`\u00a7 58.1-3975`) Tax Deeds \u2014 **0 post-sale redemption**; Special Commissioner deeds.\n- **Hampton Roads VA Land:** Chesapeake, Hampton, Yorktown, Poquoson perc/public utility infill lots (`$30k/$60k/$90k` buy boxes).\n- **Delaware Monition Sales:** New Castle, Kent, Sussex sheriff sales (`1-yr` redemption @ **15% penalty**).\n- **New Jersey Municipalities:** `564` towns (`0%` bid-down + premium, `2-yr` redemption).\n- **Indiana (Fulton County):** Nov 2026 Sheriff Sale routing integrated into parcel engine.",
+      "color": "6"
+    },
+    {
+      "id": "reg_va_deed",
+      "type": "file",
+      "file": "wiki/markets/Virginia Judicial Tax Deed and Independent Cities Market.md",
+      "x": -785,
+      "y": 290,
+      "width": 195,
+      "height": 90,
+      "color": "6"
+    },
+    {
+      "id": "reg_de_deed",
+      "type": "file",
+      "file": "wiki/markets/Delaware Monition and Tax Deed Market.md",
+      "x": -580,
+      "y": 290,
+      "width": 195,
+      "height": 90,
+      "color": "6"
+    },
+    {
+      "id": "reg_nj_lien",
+      "type": "file",
+      "file": "wiki/markets/New Jersey Municipal Tax Sale Market.md",
+      "x": -785,
+      "y": 395,
+      "width": 195,
+      "height": 90,
+      "color": "6"
+    },
+    {
+      "id": "reg_mid_dir",
+      "type": "file",
+      "file": "wiki/synthesis/Regional Mid-Atlantic Tax Sale Master Directory - MD VA NJ DE.md",
+      "x": -580,
+      "y": 395,
+      "width": 195,
+      "height": 90,
+      "color": "6"
+    },
+    {
+      "id": "reg_otc_portals",
+      "type": "file",
+      "file": "wiki/synthesis/Over-The-Counter Tax Lien Sourcing Portals and Direct Links.md",
+      "x": -1215,
+      "y": 550,
+      "width": 270,
+      "height": 95,
+      "color": "6"
+    },
+    {
+      "id": "reg_14_states",
+      "type": "file",
+      "file": "wiki/synthesis/Tax Lien State Directory - 14 Investor Certificate Jurisdictions.md",
+      "x": -930,
+      "y": 550,
+      "width": 270,
+      "height": 95,
+      "color": "6"
+    },
+    {
+      "id": "reg_50_matrix",
+      "type": "file",
+      "file": "wiki/synthesis/50-State Statutory Tax Sale Matrix.md",
+      "x": -645,
+      "y": 550,
+      "width": 260,
+      "height": 95,
+      "color": "6"
+    },
+    {
+      "id": "reg_hr_xlsx",
+      "type": "file",
+      "file": "raw/Hampton_Roads_Active_Lots_2026-09-01.xlsx",
+      "x": -1215,
+      "y": 665,
+      "width": 270,
+      "height": 95,
+      "color": "6"
+    },
+    {
+      "id": "reg_hr_buybox",
+      "type": "file",
+      "file": "wiki/synthesis/Buy Box - Hampton Roads Infill Land and Lots.md",
+      "x": -930,
+      "y": 665,
+      "width": 270,
+      "height": 95,
+      "color": "6"
+    },
+    {
+      "id": "reg_in_xlsx",
+      "type": "file",
+      "file": "raw/Fulton County Indiana Sheriff Sale (November 2026) - Full Export.xlsx",
+      "x": -645,
+      "y": 665,
+      "width": 260,
+      "height": 95,
+      "color": "6"
+    },
+    {
+      "id": "grp_play",
+      "type": "group",
+      "x": -310,
+      "y": 260,
+      "width": 620,
+      "height": 620,
+      "label": "DUE DILIGENCE, LAND FLIPPING & PROPERTY DOSSIERS",
+      "color": "3"
+    },
+    {
+      "id": "play_rules",
+      "type": "text",
+      "x": -285,
+      "y": 290,
+      "width": 570,
+      "height": 170,
+      "text": "## Core Deal Rules & Monetization Engines\n- **4-Stage Due Diligence Funnel:** SDAT -> GIS/Flood/Perc -> PACER Bankruptcy/Liens -> MAO (< 30% LTV target).\n- **Title & Exit:** Quiet Title / Tax Title Services (TTS) certification -> **Seller Financing / Land Contracts** (Contract for Deed, triple-net buyer maintenance, Dodd-Frank checks).\n- **Analyzed Property Dossiers:** `1883 Cedar Dr (Severn MD)`, `629 Queenstown Rd`, `19036 Chandlee Mill Rd`, `27040 Oxley Dr`, `Glen Dr (Westminster)`, `Dennett Rd (Oakland)`, `Araby Church Rd`.\n- **Multifamily Benchmarks:** South FL Q2 2026 (`Miami 4.75% cap`, `Ft Lauderdale 5.10%`, `West Palm Beach 5.25%`).",
+      "color": "3"
+    },
+    {
+      "id": "play_funnel",
+      "type": "file",
+      "file": "wiki/concepts/Property Due Diligence Funnel.md",
+      "x": -285,
+      "y": 480,
+      "width": 180,
+      "height": 85,
+      "color": "3"
+    },
+    {
+      "id": "play_seller",
+      "type": "file",
+      "file": "wiki/concepts/Seller Financing and Land Contracts.md",
+      "x": -95,
+      "y": 480,
+      "width": 185,
+      "height": 85,
+      "color": "3"
+    },
+    {
+      "id": "play_quiet",
+      "type": "file",
+      "file": "wiki/concepts/Tax Title Clearance and Quiet Title Actions.md",
+      "x": 100,
+      "y": 480,
+      "width": 185,
+      "height": 85,
+      "color": "3"
+    },
+    {
+      "id": "play_blueprint",
+      "type": "file",
+      "file": "wiki/synthesis/Summary - Blueprint Chetan Thakur.md",
+      "x": -285,
+      "y": 580,
+      "width": 180,
+      "height": 85,
+      "color": "3"
+    },
+    {
+      "id": "play_guardrail",
+      "type": "file",
+      "file": "wiki/synthesis/Maryland Tax Lien Deal Structuring - Budget and Guardrails.md",
+      "x": -95,
+      "y": 580,
+      "width": 185,
+      "height": 85,
+      "color": "3"
+    },
+    {
+      "id": "play_lots30k",
+      "type": "file",
+      "file": "wiki/synthesis/Maryland Lots Under 30k.md",
+      "x": 100,
+      "y": 580,
+      "width": 185,
+      "height": 85,
+      "color": "3"
+    },
+    {
+      "id": "play_cedar",
+      "type": "file",
+      "file": "wiki/Analysis - 1883 Cedar Drive Severn MD.md",
+      "x": -285,
+      "y": 680,
+      "width": 280,
+      "height": 85,
+      "color": "3"
+    },
+    {
+      "id": "play_sofla",
+      "type": "file",
+      "file": "wiki/synthesis/Summary - South Florida Multifamily Q2 2026 Report.md",
+      "x": 10,
+      "y": 680,
+      "width": 275,
+      "height": 85,
+      "color": "3"
+    },
+    {
+      "id": "grp_bot",
+      "type": "group",
+      "x": 360,
+      "y": 260,
+      "width": 900,
+      "height": 620,
+      "label": "LIVE AUTOMATION, MULTI-STATE BOT & AUTO-SYNC PIPELINE",
+      "color": "1"
+    },
+    {
+      "id": "bot_arch",
+      "type": "text",
+      "x": 385,
+      "y": 290,
+      "width": 420,
+      "height": 235,
+      "text": "## Live Platform (`@RealestateResearch_bot` & Web UI)\n- **Web Dashboard:** `http://localhost:8080` (`app.py` + Render 24/7 keep-alive).\n- **Telegram Commands:** `/tax`, `/parcel`, `/5k`, `/gilpin`, `/gradea`, `/deals [county]`, `/sync`, `/import`.\n- **Multi-State Intelligence (`multi_state_parcel_engine.py`):**\n  - Auto-routes `R0*`/`N0*`/`M0*` CO IDs -> Conejos (`TylerHost`), Gilpin (`InfoEnvoy`), Gunnison (`Spatialest`) instead of false MD SDAT fallbacks.\n  - Emits direct **Assessor Card**, **Treasurer Account**, & **Google Maps GPS** links.\n- **Continuous Sync:** `12h` county crawler (`otc_manager.py`) + `mindmap_sync.py` auto-refreshes this Canvas & Mermaid mindmaps on every ingestion!",
+      "color": "1"
+    },
+    {
+      "id": "bot_doc",
+      "type": "file",
+      "file": "wiki/Synthesis - Maryland SDAT and Tax Lien Telegram Intelligence Bot.md",
+      "x": 825,
+      "y": 290,
+      "width": 410,
+      "height": 110,
+      "color": "1"
+    },
+    {
+      "id": "bot_log",
+      "type": "file",
+      "file": "log.md",
+      "x": 825,
+      "y": 415,
+      "width": 410,
+      "height": 110,
+      "color": "1"
+    },
+    {
+      "id": "bot_app",
+      "type": "file",
+      "file": "app.py",
+      "x": 385,
+      "y": 550,
+      "width": 200,
+      "height": 85,
+      "color": "1"
+    },
+    {
+      "id": "bot_tg",
+      "type": "file",
+      "file": "real_estate_telegram_bot.py",
+      "x": 595,
+      "y": 550,
+      "width": 210,
+      "height": 85,
+      "color": "1"
+    },
+    {
+      "id": "bot_router",
+      "type": "file",
+      "file": "multi_state_parcel_engine.py",
+      "x": 815,
+      "y": 550,
+      "width": 210,
+      "height": 85,
+      "color": "1"
+    },
+    {
+      "id": "bot_sync",
+      "type": "file",
+      "file": "mindmap_sync.py",
+      "x": 1035,
+      "y": 550,
+      "width": 200,
+      "height": 85,
+      "color": "1"
+    },
+    {
+      "id": "bot_otc",
+      "type": "file",
+      "file": "otc_manager.py",
+      "x": 385,
+      "y": 665,
+      "width": 275,
+      "height": 85,
+      "color": "1"
+    },
+    {
+      "id": "bot_title",
+      "type": "file",
+      "file": "title_search_engine.py",
+      "x": 675,
+      "y": 665,
+      "width": 275,
+      "height": 85,
+      "color": "1"
+    },
+    {
+      "id": "bot_claude",
+      "type": "file",
+      "file": "CLAUDE.md",
+      "x": 965,
+      "y": 665,
+      "width": 270,
+      "height": 85,
+      "color": "1"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_hub_md",
+      "fromNode": "hub_core",
+      "fromSide": "left",
+      "toNode": "md_aa_picks",
+      "toSide": "right",
+      "label": "Maryland OTC",
+      "color": "2"
+    },
+    {
+      "id": "e_hub_co",
+      "fromNode": "hub_core",
+      "fromSide": "right",
+      "toNode": "co_summary",
+      "toSide": "left",
+      "label": "Colorado 2026",
+      "color": "4"
+    },
+    {
+      "id": "e_hub_reg",
+      "fromNode": "hub_core",
+      "fromSide": "bottom",
+      "toNode": "reg_summary",
+      "toSide": "top",
+      "label": "VA / DE / NJ / IN",
+      "color": "6"
+    },
+    {
+      "id": "e_hub_play",
+      "fromNode": "hub_core",
+      "fromSide": "bottom",
+      "toNode": "play_rules",
+      "toSide": "top",
+      "label": "Playbooks & Dossiers",
+      "color": "3"
+    },
+    {
+      "id": "e_hub_bot",
+      "fromNode": "hub_core",
+      "fromSide": "bottom",
+      "toNode": "bot_arch",
+      "toSide": "top",
+      "label": "Live Auto-Sync",
+      "color": "1"
+    },
+    {
+      "id": "e_bot_md",
+      "fromNode": "bot_sync",
+      "fromSide": "top",
+      "toNode": "md_overview",
+      "toSide": "bottom",
+      "label": "12h OTC Crawl",
+      "color": "1"
+    }
+  ]
+}

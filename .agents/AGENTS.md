@@ -12,6 +12,7 @@ When working in this workspace, you are an LLM Wiki Maintainer. You must follow 
 4. **Maintenance Automation**:
    * Update [index.md](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/index.md) immediately on creating/renaming/deleting any wiki page.
    * Append to [log.md](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/log.md) on every ingestion, query-synthesis, or lint check.
+   * Run [mindmap_sync.py](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/mindmap_sync.py) whenever wiki notes, county datasets, or parcel analyses are added/updated so [Real Estate Research Mindmap.canvas](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/Real%20Estate%20Research%20Mindmap.canvas), [Real Estate Research Master Mind Map.md](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/synthesis/Real%20Estate%20Research%20Master%20Mind%20Map.md), and [Maryland Mind Map.md](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/markets/Maryland%20Mind%20Map.md) stay in sync.
 
 ## Operational Standards
 

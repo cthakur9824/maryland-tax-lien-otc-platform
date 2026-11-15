@@ -37,7 +37,7 @@ pie title Maryland OTC & Tax Lien Portfolio (735 Parcels)
 | Jurisdiction | Parcels Compiled | Statutory Interest | Redemption Window | County Tax Portal / OTC Contact |
 | :--- | :--- | :--- | :--- | :--- |
 | **Cecil County** | **526** | 12.0% Annual (1.0%/mo) | 6 Months | `taxsale@cecilcountymd.gov` \| (410) 996-5385 |
-| **Anne Arundel County** | **106** | 12.0% Annual (1.0%/mo) | 6 Months | `financeinfo@aacounty.org` \| (410) 222-1144 |
+| **Anne Arundel County** | **106** | 12.0% Annual (1.0%/mo) | 6 Months | `taxsale@aacounty.org` \| (410) 222-1735 *(General: `financeinfo@aacounty.org` \| (410) 222-1144)* |
 | **Kent County** | **54** | 12.0% Annual (1.0%/mo) | 6 Months | `financeinfo@kentgov.org` \| (410) 778-7478 |
 | **Wicomico County** | **42** | 12.0% Annual (1.0%/mo) | 6 Months | `finance@wicomicocounty.org` \| (410) 548-4840 |
 | **Worcester County** | **5** | 12.0% Annual (1.0%/mo) | 6 Months | `taxes@co.worcester.md.us` \| (410) 632-0686 |

@@ -2,18 +2,20 @@ name: Render 24-7 Keep-Alive Ping
 
 on:
   schedule:
-    # Runs every 10 minutes to prevent Render free-tier spin-down after 15 minutes of inactivity
-    - cron: '*/10 * * * *'
+    # Runs every 5 minutes to stay well inside Render free-tier 15-minute idle timeout even with GitHub cron jitter
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
   ping-render:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Render Health Endpoint
+      - name: Ping Render Health & Keep-Alive Endpoints
         env:
           RENDER_URL: ${{ secrets.RENDER_EXTERNAL_URL || vars.RENDER_EXTERNAL_URL || 'https://maryland-tax-lien-otc-platform.onrender.com' }}
         run: |
-          echo "Pinging ${RENDER_URL}/health ..."
-          curl -fsSL --retry 3 --max-time 25 "${RENDER_URL}/health" || true
+          echo "Pinging ${RENDER_URL}/ping ..."
+          curl -fsSL --retry 4 --retry-delay 5 --max-time 45 "${RENDER_URL}/ping" || true
+          sleep 5
+          curl -fsSL --retry 2 --max-time 25 "${RENDER_URL}/health" || true
 

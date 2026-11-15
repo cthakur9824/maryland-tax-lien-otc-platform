@@ -30,6 +30,15 @@ from otc_manager import (
     load_graded_deals,
     UPLOADS_DIR,
 )
+from multi_state_parcel_engine import (
+    search_parcel_intelligent,
+    format_parcel_dossier_html,
+    format_county_summary_html,
+    format_all_counties_overview_html,
+    parse_query_intent,
+    is_non_maryland_parcel_pattern,
+    ensure_index_loaded,
+)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -80,6 +89,35 @@ BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN") or _default_bot_token()
 DEFAULT_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "8561671943")
 AUTO_SYNC_INTERVAL_SEC = int(os.environ.get("OTC_AUTO_SYNC_SECONDS", str(12 * 3600)))
 
+_AUTO_SYNC_LOCK = threading.Lock()
+BOT_STATE = {
+    "started_at": None,
+    "last_poll_ts": None,
+    "last_ok_ts": None,
+    "last_error": None,
+    "restarts": 0,
+    "conflict_409_count": 0,
+    "auto_sync_started": False,
+}
+
+
+def get_bot_health() -> dict:
+    """Return live Telegram polling heartbeat and recovery telemetry."""
+    now = time.time()
+    last_poll = BOT_STATE.get("last_poll_ts")
+    last_ok = BOT_STATE.get("last_ok_ts")
+    return {
+        "started_at": BOT_STATE.get("started_at"),
+        "last_poll_ts": last_poll,
+        "last_ok_ts": last_ok,
+        "last_poll_age_sec": round(now - last_poll, 1) if last_poll else None,
+        "last_ok_age_sec": round(now - last_ok, 1) if last_ok else None,
+        "last_error": BOT_STATE.get("last_error"),
+        "restarts": BOT_STATE.get("restarts", 0),
+        "conflict_409_count": BOT_STATE.get("conflict_409_count", 0),
+        "auto_sync_started": BOT_STATE.get("auto_sync_started", False),
+    }
+
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
@@ -110,10 +148,11 @@ def send_telegram_message(token, chat_id, text, reply_markup=None):
     last_res = None
     for i, chunk in enumerate(chunks):
         markup = reply_markup if (i == len(chunks) - 1) else None
+        is_html = ("<b>" in chunk or "<code>" in chunk or "<a href=" in chunk)
         payload = {
             "chat_id": chat_id,
             "text": chunk,
-            "parse_mode": "Markdown"
+            "parse_mode": "HTML" if is_html else "Markdown"
         }
         if markup:
             payload["reply_markup"] = json.dumps(markup)
@@ -371,6 +410,233 @@ def format_top_deals_by_county(county_filter: str = "") -> str:
     return msg
 
 
+# ==================== GUNNISON COUNTY COLORADO 2026 TAX LIEN ENGINE ====================
+GUNNISON_JSON_PATH = os.path.join(BASE_DIR, "scratch", "gunnison_2026_graded_deals.json")
+
+
+def load_gunnison_deals() -> Dict[str, Any]:
+    if os.path.exists(GUNNISON_JSON_PATH):
+        try:
+            with open(GUNNISON_JSON_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Notice loading Gunnison JSON: {e}")
+    return {"parcels": [], "grade_counts": {}}
+
+
+def search_gunnison_parcel(query: str) -> List[Dict[str, Any]]:
+    q = query.strip().upper()
+    if not q:
+        return []
+    data = load_gunnison_deals()
+    parcels = data.get("parcels", [])
+
+    # 1. Exact Parcel Number or APN or Sale ID match
+    exact = []
+    for p in parcels:
+        pno = str(p.get("parcel_number", "")).upper()
+        apn = str(p.get("apn_pin", "")).upper()
+        sale_id = str(p.get("sale_id", "")).upper()
+        if q == pno or q == apn or q == f"SALE {sale_id}" or q == f"#{sale_id}":
+            exact.append(p)
+    if exact:
+        return exact
+
+    # 2. Substring match on Parcel Number, Situs Address, Owner Name, or Subdivision
+    matches = []
+    for p in parcels:
+        haystack = " ".join([
+            str(p.get("parcel_number", "")),
+            str(p.get("apn_pin", "")),
+            str(p.get("situs_address", "")),
+            str(p.get("owner_name", "")),
+            str(p.get("subdivision", "")),
+            str(p.get("legal", "")),
+        ]).upper()
+        if q in haystack:
+            matches.append(p)
+    return matches[:5]
+
+
+def format_gunnison_card(p: Dict[str, Any]) -> str:
+    grade = p.get("grade", "C")
+    badge = {"A": "🟢 GRADE A", "B": "🟡 GRADE B", "C": "⚪ GRADE C", "D": "🟠 GRADE D", "F": "🔴 GRADE F (DO NOT BID)"}.get(grade, grade)
+    situs = p.get("situs_address") or p.get("subdivision") or "No Street Address (See Legal)"
+    msg = (
+        f"🏔 *GUNNISON COUNTY CO — 2026 TAX LIEN DOSSIER*\n"
+        f"━━━━━━━━━━━━━━━━━━━━━\n"
+        f"🏷 *Parcel #:* `{p.get('parcel_number')}` (Sale ID: `{p.get('sale_id')}` | Item: `{p.get('item_id')}`)\n"
+        f"🔢 *12-Digit APN:* `{p.get('apn_pin') or 'N/A'}`\n"
+        f"📊 *Underwriting Grade:* *{badge}*\n"
+        f"🎯 *Decision:* **{p.get('bid_recommendation')}**\n\n"
+        f"📍 *Situs Address:* `{situs}`\n"
+        f"🏘 *Subdivision:* {p.get('subdivision') or 'Unplatted / Metes & Bounds'}\n"
+        f"🏗 *Class / Type:* {p.get('account_type')} ({p.get('parcel_type')}) — **{p.get('acres', 0):.2f} Acres**\n"
+        f"👤 *Owner:* `{p.get('owner_name')}`\n"
+        f"📬 *Owner Mailing:* `{p.get('mailing_address') or 'N/A'}`\n\n"
+        f"💰 *2026 VALUATION & LIEN METRICS*\n"
+        f"• *Face Bid (Direct Bid):* **${float(p.get('face_amount', 0)):,.2f}**\n"
+        f"• *Rec. Max Proxy Bid:* **${float(p.get('recommended_max_proxy_bid', 0)):,.2f}** (Max Premium: `${float(p.get('max_premium_over_face', 0)):,.2f}`)\n"
+        f"• *Land Actual Value:* **${float(p.get('land_actual_value', 0)):,.0f}**\n"
+        f"• *Improvement Value:* **${float(p.get('imps_actual_value', 0)):,.0f}**\n"
+        f"• *2026 Total Actual Value:* **${float(p.get('total_actual_value', 0)):,.0f}**\n"
+        f"• *Tax-to-Value (TVR):* **{p.get('tvr_pct')}%** | *Equity Cushion:* **${float(p.get('equity_spread', 0)):,.0f}**\n"
+        f"• *Est. 1-Yr Interest (@ 14%):* **${float(p.get('est_1yr_interest_earned', 0)):,.2f}** (3-Yr Redemption)\n\n"
+        f"📜 *DEED & UNDERWRITING NOTES*\n"
+        f"• *Last Sale:* `{p.get('last_sale_date') or 'N/A'}` — **${float(p.get('last_sale_price', 0)):,.0f}** (`{p.get('deed_type') or 'Recorded'}`)\n"
+        f"• *Notes:* {p.get('underwriting_notes')}\n"
+        f"• *Legal:* `{p.get('legal')}`\n\n"
+        f"🔗 [Open Spatialest Assessor Card]({p.get('assessor_url')})"
+    )
+    if p.get("google_maps_url"):
+        msg += f" | [Google Maps Pin]({p.get('google_maps_url')})"
+    return msg
+
+
+def format_gunnison_5k_budget() -> str:
+    data = load_gunnison_deals()
+    by_id = {p["parcel_number"]: p for p in data.get("parcels", [])}
+    core_ids = [
+        ("R074851", 1480.00, "Sold Sept 30, 2025 for $595,000 (Spec Warr Deed); escrow/title prorated tax oversight."),
+        ("R009973", 745.00, "Fee-simple deeded lot + residence sold Dec 2021 for $271,500; 0.23% TVR (426x coverage)."),
+        ("R074006", 815.00, "6.01-acre ranch home ($427,460 structure value); 0.19% TVR (533x equity coverage)."),
+        ("R003312", 1200.00, "Prime downtown Town of Crested Butte condo on Whiterock Ave; 0.25% TVR."),
+        ("R008061", 760.00, "Improved Ohio Creek Valley residence ($196,950 building); 0.38% TVR."),
+    ]
+    backup_ids = [
+        ("R013037", "Sold Sept 25, 2025 for $365,000; 0.43% TVR."),
+        ("R004113", "Sold Dec 15, 2025 for $625,000 in Marble; 0.46% TVR."),
+        ("R011958", "Sold Aug 14, 2024 for $365,000 in Arrowhead; 0.37% TVR."),
+        ("R011448", "2.05-acre Blue Mesa residence ($292k structure); 0.37% TVR."),
+        ("R001120", "West Gunnison home sold Aug 2022 for $485,000; 0.37% TVR."),
+    ]
+
+    msg = (
+        "🏔 *GUNNISON COUNTY CO — $5,000 BUDGET BID PLAN*\n"
+        "━━━━━━━━━━━━━━━━━━━━━\n"
+        "💵 *Core 5 Direct Bids:* **$4,931.14** | *Capped Proxy Total:* **$5,000.00**\n"
+        "📈 *Est. 1-Yr Interest (@ 14%):* **$690.36/yr** | *Combined Value:* **$1,800,560**\n\n"
+        "🏆 *CORE 5 PICKS (UPLOADED IN 5K SHEET):*\n"
+    )
+    for idx, (pid, cap_proxy, reason) in enumerate(core_ids, 1):
+        p = by_id.get(pid, {})
+        msg += (
+            f"*{idx}. `{pid}` (Sale #{p.get('sale_id')})* — `{p.get('situs_address')}`\n"
+            f"   • *Direct Bid:* **${float(p.get('face_amount', 0)):,.2f}** | *Rec. Max Proxy:* **${cap_proxy:,.2f}** (4% Ceiling: `${float(p.get('recommended_max_proxy_bid', 0)):,.2f}`)\n"
+            f"   • *Land Val:* **${float(p.get('land_actual_value', 0)):,.0f}** | *2026 Actual Val:* **${float(p.get('total_actual_value', 0)):,.0f}**\n"
+            f"   • *TVR:* **{p.get('tvr_pct')}%** | *1-Yr Int (14%):* **${float(p.get('est_1yr_interest_earned', 0)):,.2f}**\n"
+            f"   • *Why:* {reason}\n"
+            f"   • 🔗 [Assessor Card]({p.get('assessor_url')})\n\n"
+        )
+
+    msg += "🔄 *BACKUP ROTATION PICKS (#6–#10 IF OUTBID):*\n"
+    for idx, (pid, reason) in enumerate(backup_ids, 6):
+        p = by_id.get(pid, {})
+        msg += (
+            f"*{idx}. `{pid}` (Sale #{p.get('sale_id')})* — `{p.get('situs_address')}`\n"
+            f"   • Direct: **${float(p.get('face_amount', 0)):,.2f}** | Proxy: **${float(p.get('recommended_max_proxy_bid', 0)):,.2f}** | Land: **${float(p.get('land_actual_value', 0)):,.0f}** | Actual: **${float(p.get('total_actual_value', 0)):,.0f}** ({p.get('tvr_pct')}% TVR)\n"
+            f"   • {reason} [Assessor]({p.get('assessor_url')})\n"
+        )
+    msg += "\n💡 _Send any parcel # (e.g. `R074851` or `R030478`) to inspect its full dossier!_"
+    return msg
+
+
+def format_gunnison_summary() -> str:
+    data = load_gunnison_deals()
+    gc = data.get("grade_counts", {})
+    parcels = [p for p in data.get("parcels", []) if p.get("grade") == "A"]
+    msg = (
+        f"🏔 *GUNNISON COUNTY, CO — 2026 TAX LIEN SALE*\n"
+        f"━━━━━━━━━━━━━━━━━━━━━\n"
+        f"• *Total Auction Parcels:* **{data.get('total_parcels', 173)}**\n"
+        f"• *Grade Breakdown:* 🟢 A: **{gc.get('A', 85)}** | 🟡 B: **{gc.get('B', 8)}** | ⚪ C: **{gc.get('C', 32)}** | 🟠 D: **{gc.get('D', 27)}** | 🔴 F: **{gc.get('F', 21)}**\n"
+        f"• *Statutory Rate:* **14%–15% Annual** (3-Year Redemption)\n\n"
+        f"🏆 *Top 10 Lowest-TVR Grade A Parcels:*\n"
+    )
+    for idx, p in enumerate(parcels[:10], 1):
+        msg += (
+            f"*{idx}. `{p['parcel_number']}` (Sale #{p['sale_id']})* — `{p.get('situs_address') or p.get('subdivision')}`\n"
+            f"   Face: **${p['face_amount']:,.2f}** | Proxy: **${p['recommended_max_proxy_bid']:,.2f}** | Actual: **${p['total_actual_value']:,.0f}** (**{p['tvr_pct']}% TVR**)\n"
+        )
+    msg += "\n💡 _Send `/5k` for your $5,000 budget portfolio, or send any `R0...` parcel ID for full details!_"
+    return msg
+
+
+# ==================== GILPIN COUNTY CO 2026 TAX LIEN ENGINE ====================
+GILPIN_JSON_PATH = os.path.join(BASE_DIR, "scratch", "gilpin_2026_graded_deals.json")
+_GILPIN_CACHE: List[Dict[str, Any]] = []
+
+
+def load_gilpin_deals() -> List[Dict[str, Any]]:
+    global _GILPIN_CACHE
+    if _GILPIN_CACHE:
+        return _GILPIN_CACHE
+    if os.path.exists(GILPIN_JSON_PATH):
+        try:
+            with open(GILPIN_JSON_PATH, "r", encoding="utf-8") as f:
+                _GILPIN_CACHE = json.load(f)
+                return _GILPIN_CACHE
+        except Exception as e:
+            print(f"Error loading Gilpin JSON: {e}")
+    return []
+
+
+def search_gilpin_parcel(query: str) -> List[Dict[str, Any]]:
+    q = query.strip().upper()
+    if not q:
+        return []
+    parcels = load_gilpin_deals()
+    exact = []
+    for p in parcels:
+        pno = str(p.get("parcel", "")).upper()
+        pin = str(p.get("pin", "")).upper()
+        sale_id = str(p.get("sale_id", "")).upper()
+        if q == pno or (pin and q == pin) or q == f"GILPIN {sale_id}":
+            exact.append(p)
+    if exact:
+        return exact
+
+    matches = []
+    for p in parcels:
+        haystack = " ".join([
+            str(p.get("parcel", "")),
+            str(p.get("pin", "")),
+            str(p.get("situs", "")),
+            str(p.get("owners", "")),
+            str(p.get("subd", "")),
+            str(p.get("legal", "")),
+        ]).upper()
+        if q in haystack:
+            matches.append(p)
+    return matches[:5]
+
+
+def format_gilpin_card(p: Dict[str, Any]) -> str:
+    return format_parcel_dossier_html(p)
+
+
+def format_gilpin_summary() -> str:
+    parcels = load_gilpin_deals()
+    ab = [p for p in parcels if str(p.get("grade", "")).startswith("Grade A") or str(p.get("grade", "")).startswith("Grade B")]
+    ab.sort(key=lambda x: (0 if str(x.get("grade", "")).startswith("Grade A") else 1, -float(x.get("total_actual", 0))))
+    msg = (
+        f"🏔 *GILPIN COUNTY, CO — 2026 TAX LIEN SALE*\n"
+        f"━━━━━━━━━━━━━━━━━━━━━\n"
+        f"• *Total Auction Parcels:* **{len(parcels)}** (70 `R*` Real Property | 56 `N*` Mining/Mineral)\n"
+        f"• *Top Qualified Deals:* **21 Grade A** + **7 Grade B** = **28 Deals**\n"
+        f"• *Statutory Rate:* **14% Annual** (3-Year Redemption)\n\n"
+        f"🏆 *Top 12 Grade A Gilpin Deals (Irrespective of Budget):*\n"
+    )
+    for idx, p in enumerate(ab[:12], 1):
+        msg += (
+            f"*{idx}. `{p['parcel']}` (Sale #{p['sale_id']})* — `{p.get('situs') or p.get('subd')}`\n"
+            f"   Face: **${p['face']:,.2f}** | Proxy: **${p['rec_proxy']:,.2f}** | "
+            f"Land: **${p['land_val']:,.0f}** | Actual: **${p['total_actual']:,.0f}** (**{p['tvr_pct']}% TVR**, {p['acres']:.2f} ac)\n"
+        )
+    msg += "\n💡 _Send `/gilpin <parcel#>` or any parcel ID (e.g. `R003229`, `R000435`, `R000769`, `R000974`) for full dossier!_"
+    return msg
+
+
 # ==================== BACKGROUND AUTO-SYNC SCHEDULER ====================
 def background_auto_sync_worker():
     """Periodically crawls Maryland county websites for updated OTC lists."""
@@ -394,42 +660,74 @@ def background_auto_sync_worker():
 
 
 # ==================== BOT POLLING ENGINE ====================
-def run_bot_loop(start_auto_sync: bool = True):
-    print(f"Starting Maryland Real Estate Research Telegram Bot...")
+def run_bot_loop(start_auto_sync: bool = True, send_startup_ping: bool = True):
+    print("Starting Maryland Real Estate Research Telegram Bot...")
     print(f"Base Directory: {BASE_DIR}")
 
+    BOT_STATE["started_at"] = BOT_STATE["started_at"] or time.time()
+    BOT_STATE["last_poll_ts"] = time.time()
+
     if start_auto_sync:
-        sync_thread = threading.Thread(target=background_auto_sync_worker, daemon=True)
-        sync_thread.start()
+        with _AUTO_SYNC_LOCK:
+            if not BOT_STATE["auto_sync_started"]:
+                sync_thread = threading.Thread(target=background_auto_sync_worker, daemon=True)
+                sync_thread.start()
+                BOT_STATE["auto_sync_started"] = True
 
     offset = None
     url_updates = f"https://api.telegram.org/bot{BOT_TOKEN}/getUpdates"
+    url_delete_webhook = f"https://api.telegram.org/bot{BOT_TOKEN}/deleteWebhook"
 
     session = requests.Session()
     session.headers.update({'User-Agent': 'MarylandRealEstateBot/3.0'})
 
+    # Ensure no stale Telegram webhook blocks long-polling getUpdates
     try:
-        send_telegram_message(
-            BOT_TOKEN,
-            DEFAULT_CHAT_ID,
-            "🚀 *Maryland Real Estate & OTC Tax Lien Intelligence Bot Online!*\n"
-            "• Send `/gradea` for all Grade A OTC deals\n"
-            "• Send `/sync` to pull the latest OTC lists from Maryland county websites\n"
-            "• Upload any `.csv`, `.xlsx`, or `.pdf` OTC list directly into this chat to import it!"
-        )
+        wh_resp = session.post(url_delete_webhook, data={"drop_pending_updates": "false"}, timeout=15)
+        if wh_resp.status_code == 200:
+            print("Verified Telegram webhook cleared for long-polling.")
     except Exception as e:
-        print(f"Startup notification notice: {e}")
+        print(f"Webhook clear notice: {e}")
+
+    if send_startup_ping:
+        try:
+            send_telegram_message(
+                BOT_TOKEN,
+                DEFAULT_CHAT_ID,
+                "🚀 <b>Multi-State Real Estate &amp; Tax Lien Intelligence Bot Online!</b>\n"
+                "• <b>Active County Exports:</b> Conejos CO (<code>/conejos</code>), Gilpin CO (<code>/gilpin</code>), Gunnison CO (<code>/gunnison</code>), Fulton IN (<code>/fulton</code>), + Maryland SDAT\n"
+                "• <b>Intelligent Parcel Routing:</b> Send any parcel ID (e.g. <code>R017432</code>, <code>R001364</code>, <code>R003229</code>, <code>R074851</code>) or <code>&lt;County&gt; &lt;Parcel#&gt;</code> for instant state &amp; county underwriting!\n"
+                "• Send <code>/counties</code> to inspect all active state &amp; county databases."
+            )
+        except Exception as e:
+            print(f"Startup notification notice: {e}")
 
     while True:
         try:
+            BOT_STATE["last_poll_ts"] = time.time()
             params = {"timeout": 25}
             if offset is not None:
                 params["offset"] = offset
 
             resp = session.get(url_updates, params=params, timeout=35)
-            if resp.status_code != 200:
-                time.sleep(3)
+            if resp.status_code == 409:
+                BOT_STATE["conflict_409_count"] += 1
+                BOT_STATE["last_error"] = "HTTP 409 Conflict (another getUpdates instance is active)"
+                if BOT_STATE["conflict_409_count"] in (1, 5) or BOT_STATE["conflict_409_count"] % 15 == 0:
+                    print(
+                        f"[Telegram 409 Conflict #{BOT_STATE['conflict_409_count']}] "
+                        "Another bot poller is active with this token; backing off 20s."
+                    )
+                time.sleep(20)
                 continue
+
+            if resp.status_code != 200:
+                BOT_STATE["last_error"] = f"HTTP {resp.status_code} from getUpdates"
+                time.sleep(5)
+                continue
+
+            BOT_STATE["last_ok_ts"] = time.time()
+            BOT_STATE["last_error"] = None
 
             data = resp.json()
             if not data.get("ok"):
@@ -500,23 +798,88 @@ def run_bot_loop(start_auto_sync: bool = True):
 
                 if cmd in ["/start", "/help"]:
                     help_txt = (
-                        "🏛 *MARYLAND REAL ESTATE & TAX LIEN INTELLIGENCE BOT*\n\n"
-                        "Send me any Maryland address, parcel ID, or upload a county OTC file (`.csv`, `.xlsx`, `.pdf`).\n\n"
-                        "*Property & Title Commands:*\n"
+                        "🏛 *MULTI-STATE REAL ESTATE & TAX LIEN INTELLIGENCE BOT*\n\n"
+                        "Send me any Parcel ID (e.g. `R017432`, `R001364`, `R003229`, `R074851`, `25-12-19-200-001.012-004`), County + Parcel (e.g. `Conejos R017432`), or Maryland address!\n\n"
+                        "*Multi-State County Tax Sale Commands:*\n"
+                        "• `/counties` - 🗺 *View All Active State & County Tax Sale Databases*\n"
+                        "• `/conejos [query]` - 🏔 *Conejos County, CO 2026 Tax Lien Parcels (e.g. `R017432`, `R001364`)*\n"
+                        "• `/gilpin [query]` - 🏔 *Gilpin County, CO 2026 Tax Lien Parcels (e.g. `R003229`, `R000435`)*\n"
+                        "• `/gunnison [query]` - 🏔 *Gunnison County, CO 2026 Tax Lien Parcels (e.g. `R074851`)*\n"
+                        "• `/fulton [query]` - 🏛 *Fulton County, IN Sheriff Sale Parcels*\n"
+                        "• `/5k` or `/budget` - 🏔 *Gunnison County CO $5,000 Budget Bid Plan*\n\n"
+                        "*Maryland Property & Title Commands:*\n"
                         "• `/lookup <address>` - Query SDAT, Zoning, Lot Size & Deed History\n"
-                        "• `/parcel <APN>` - Search directly by Maryland Account/APN ID\n"
+                        "• `/parcel <APN>` - Search directly by Account/Parcel ID\n"
                         "• `/title <address or APN>` - 📜 *Title Search, Chain of Title & Confluence Score*\n"
                         "• `/tax <address or APN>` - Inspect county tax bill & OTC lien status\n"
                         "• `/offer <address or APN>` - Calculate investor bidding & offer strategy\n"
-                        "• `/save <address or APN>` - Save dossier to Obsidian Real Estate Wiki\n\n"
-                        "*OTC Inventory & Auto-Sync Commands:*\n"
+                        "• `/save <address or APN>` - Save dossier to Obsidian Real Estate Wiki\n"
                         "• `/gradea` - 🏆 View all Grade A Title Confluence OTC Deals\n"
                         "• `/deals [county]` - 💎 View top low-LTV OTC deals (e.g. `/deals Kent`)\n"
                         "• `/sync` - 🔄 Automatically crawl Maryland county websites for updated OTC lists\n"
-                        "• `/import <url> [county]` - 📥 Import an OTC PDF/CSV/XLSX directly from a URL\n"
-                        "• *Upload File* - 📎 Drop any `.csv`, `.xlsx`, or `.pdf` OTC list into chat to import!"
+                        "• *Upload File* - 📎 Drop any `.csv`, `.xlsx`, or `.pdf` tax sale list into chat to auto-index!"
                     )
                     send_telegram_message(BOT_TOKEN, chat_id, help_txt)
+
+                elif cmd == "/counties":
+                    send_telegram_message(BOT_TOKEN, chat_id, format_all_counties_overview_html())
+
+                elif cmd in ["/5k", "/budget"]:
+                    send_telegram_message(BOT_TOKEN, chat_id, format_gunnison_5k_budget())
+
+                elif cmd == "/conejos":
+                    if not args:
+                        send_telegram_message(BOT_TOKEN, chat_id, format_county_summary_html("conejos"))
+                    else:
+                        c_matches = search_parcel_intelligent(args, county_override="conejos")
+                        if c_matches:
+                            for cm in c_matches[:3]:
+                                send_telegram_message(BOT_TOKEN, chat_id, format_parcel_dossier_html(cm))
+                        else:
+                            send_telegram_message(BOT_TOKEN, chat_id, f"❌ No Conejos County, CO parcel found matching <code>{args}</code>.")
+
+                elif cmd == "/fulton":
+                    if not args:
+                        send_telegram_message(BOT_TOKEN, chat_id, format_county_summary_html("fulton"))
+                    else:
+                        f_matches = search_parcel_intelligent(args, county_override="fulton")
+                        if f_matches:
+                            for fm in f_matches[:3]:
+                                send_telegram_message(BOT_TOKEN, chat_id, format_parcel_dossier_html(fm))
+                        else:
+                            send_telegram_message(BOT_TOKEN, chat_id, f"❌ No Fulton County, IN parcel found matching <code>{args}</code>.")
+
+                elif cmd == "/gunnison":
+                    if not args:
+                        send_telegram_message(BOT_TOKEN, chat_id, format_gunnison_summary())
+                    else:
+                        g_matches = search_gunnison_parcel(args)
+                        if g_matches:
+                            for gp in g_matches[:3]:
+                                send_telegram_message(BOT_TOKEN, chat_id, format_gunnison_card(gp))
+                        else:
+                            ms_g = search_parcel_intelligent(args, county_override="gunnison")
+                            if ms_g:
+                                for gp in ms_g[:3]:
+                                    send_telegram_message(BOT_TOKEN, chat_id, format_parcel_dossier_html(gp))
+                            else:
+                                send_telegram_message(BOT_TOKEN, chat_id, f"❌ No Gunnison County 2026 tax lien parcel found matching `{args}`.")
+
+                elif cmd == "/gilpin":
+                    if not args:
+                        send_telegram_message(BOT_TOKEN, chat_id, format_gilpin_summary())
+                    else:
+                        gp_matches = search_gilpin_parcel(args)
+                        if gp_matches:
+                            for gip in gp_matches[:3]:
+                                send_telegram_message(BOT_TOKEN, chat_id, format_gilpin_card(gip))
+                        else:
+                            ms_gp = search_parcel_intelligent(args, county_override="gilpin")
+                            if ms_gp:
+                                for gip in ms_gp[:3]:
+                                    send_telegram_message(BOT_TOKEN, chat_id, format_parcel_dossier_html(gip))
+                            else:
+                                send_telegram_message(BOT_TOKEN, chat_id, f"❌ No Gilpin County 2026 tax lien parcel found matching `{args}`.")
 
                 elif cmd == "/gradea":
                     send_telegram_message(BOT_TOKEN, chat_id, format_grade_a_summary())
@@ -592,13 +955,41 @@ def run_bot_loop(start_auto_sync: bool = True):
                     else:
                         send_telegram_message(BOT_TOKEN, chat_id, f"❌ Property `{query}` not found for title search.")
 
-                elif cmd in ["/lookup", "/parcel", "/search"] or (not cmd.startswith("/") and len(text) > 4):
+                elif cmd in ["/lookup", "/parcel", "/search"] or (not cmd.startswith("/") and len(text) > 3):
                     query = args if cmd.startswith("/") else text
+                    county_hint, state_hint, cleaned_q = parse_query_intent(query)
+
+                    # 1. Intelligent Multi-State / Multi-County Search (Conejos CO, Gilpin CO, Gunnison CO, Fulton IN, + Live Portals)
+                    ms_matches = search_parcel_intelligent(query)
+                    if ms_matches:
+                        for m in ms_matches[:3]:
+                            c_low = str(m.get("county") or "").lower()
+                            if c_low == "gunnison" and m.get("parcel_number"):
+                                send_telegram_message(BOT_TOKEN, chat_id, format_gunnison_card(m))
+                            elif c_low == "gilpin" and m.get("rec_proxy") is not None:
+                                send_telegram_message(BOT_TOKEN, chat_id, format_gilpin_card(m))
+                            else:
+                                send_telegram_message(BOT_TOKEN, chat_id, format_parcel_dossier_html(m))
+                        continue
+
+                    # 2. Prevent Colorado/Indiana parcel IDs or county queries from falsely routing to Maryland SDAT
+                    if is_non_maryland_parcel_pattern(cleaned_q, county_hint=county_hint, state_hint=state_hint):
+                        target_label = f"{county_hint.title()} County, {state_hint}" if county_hint else "Colorado / Indiana County Tax & GIS Portals"
+                        send_telegram_message(
+                            BOT_TOKEN,
+                            chat_id,
+                            f"❌ <b>No property record found for</b> <code>{query}</code> in <b>{target_label}</b>.\n"
+                            f"• <i>Checked active tax sale exports: Conejos CO, Gilpin CO, Gunnison CO, Fulton IN, and live County Treasurer / GIS portals.</i>\n"
+                            f"• <i>Tip: Send</i> <code>/counties</code> <i>to view all indexed counties, or specify</i> <code>&lt;County&gt; &lt;Parcel#&gt;</code>."
+                        )
+                        continue
+
+                    # 3. Otherwise, query Maryland SDAT & Maryland County OTC Databases
                     send_telegram_message(BOT_TOKEN, chat_id, f"🔍 *Searching Maryland SDAT & County Databases for:* `{query}`...")
 
                     results = search_maryland_property(query)
                     if not results:
-                        send_telegram_message(BOT_TOKEN, chat_id, f"❌ No property records found for `{query}` in Maryland.\n_Check street spelling or provide county._")
+                        send_telegram_message(BOT_TOKEN, chat_id, f"❌ No property records found for `{query}` in Multi-State County Exports or Maryland SDAT.\n_Check parcel # / street spelling, or send `/counties`._")
                     else:
                         for prop in results[:2]:
                             tax_res = inspect_property_tax_status(prop)

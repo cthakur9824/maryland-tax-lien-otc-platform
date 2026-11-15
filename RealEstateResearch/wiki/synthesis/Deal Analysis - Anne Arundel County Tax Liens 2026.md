@@ -100,14 +100,18 @@ For investors with smaller initial budgets seeking rapid, high-margin percentage
 ## 🚀 How to Execute & Buy These Liens
 
 1. **Verify Live Standing**:
-   * Use our Telegram Bot: Send `/tax <Account #>` to `@RealestateResearch_bot` to verify current county billing status.
-2. **Contact Anne Arundel County Office of Finance**:
-   * **Phone**: (410) 222-1144
-   * **Website**: [Anne Arundel Tax Sale Portal](https://www.aacounty.org/finance/tax-sale)
-   * **Inquiry**: Reference the **List #** and **Account #** from the Remaining Liens List to request an Over-The-Counter assignment purchase.
-3. **Execute Payment**: Pay the exact delinquent lien balance + recording fees to receive your official **Certificate of Sale**.
+   * **Via Telegram Bot**: Send `/tax <Account #>` to `@RealestateResearch_bot` to verify current county billing status.
+   * **Via Anne Arundel County MUNIS Self-Service Portal**: Search the 12-digit `Account #` directly at [aacounty.munisselfservice.com/citizens/default.aspx](https://aacounty.munisselfservice.com/citizens/default.aspx).
+2. **Contact Anne Arundel County Tax Sale Office & Office of Finance**:
+   * **Direct Tax Sale Desk Email** *(from Page 3 of Official Remaining Liens PDF)*: **`taxsale@aacounty.org`**
+   * **Direct Tax Sale Desk Phone**: **(410) 222-1735**
+   * **General Office of Finance / Billing Customer Service**: **`financeinfo@aacounty.org`** | **(410) 222-1144**
+   * **SDAT Real Property Help Line**: **(410) 974-5709**
+   * **Official Tax Sale Portal**: [Anne Arundel Tax Sale Portal](https://www.aacounty.org/finance/tax-sale)
+   * **Inquiry**: Reference the **List #**, **12-Digit Account #**, and **Owner Name** from the Remaining Liens List ([Anne-Arundell-list-of-liens.pdf](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Anne-Arundell-list-of-liens.pdf)) to confirm live availability and exact accumulated interest at time of purchase.
+3. **Execute Payment**: Pay the exact delinquent lien balance + accumulated statutory interest + recording fees to receive your official **Certificate of Sale**.
 4. **Track the 6-Month Foreclosure Window**:
-   * Set calendar alert for 6 months from the June sale date.
+   * Set calendar alert for 6 months from the June 3, 2026 sale date (eligible starting December 3, 2026).
    * If unredeemed, instruct an Anne Arundel real estate attorney to file the Circuit Court foreclosure complaint to take full title.
 
 ---

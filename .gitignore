@@ -6,6 +6,11 @@ __pycache__/
 venv/
 .obsidian/workspace.json
 .obsidian/workspace-mobile.json
+**/.obsidian/workspace.json
+**/.obsidian/workspace-mobile.json
+.~lock.*#
 RealEstateResearch/scratch/*.log
+RealEstateResearch/scratch/*.html
+RealEstateResearch/scratch/*.py
 RealEstateResearch/raw/Tax-Lien-Investing.pdf
 

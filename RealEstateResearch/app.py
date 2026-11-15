@@ -673,8 +673,28 @@ class LivePlatformHandler(BaseHTTPRequestHandler):
             self.wfile.write(body)
             return
 
-        if path == "/health":
-            self._send_json({"status": "ok", "service": "maryland-tax-lien-otc-platform"})
+        if path in ("/health", "/ping"):
+            bot_health = {}
+            if ENABLE_TELEGRAM_BOT:
+                try:
+                    from real_estate_telegram_bot import get_bot_health
+                    bot_health = get_bot_health()
+                except Exception as e:
+                    bot_health = {"error": str(e)}
+            started_at = KEEPALIVE_STATE.get("started_at") or time.time()
+            self._send_json({
+                "status": "ok",
+                "service": "maryland-tax-lien-otc-platform",
+                "uptime_seconds": round(time.time() - started_at, 1),
+                "telegram_bot_enabled": ENABLE_TELEGRAM_BOT,
+                "bot_health": bot_health,
+                "keepalive": {
+                    "interval_sec": KEEPALIVE_INTERVAL_SEC,
+                    "self_ping_count": KEEPALIVE_STATE.get("self_ping_count", 0),
+                    "last_self_ping_ts": KEEPALIVE_STATE.get("last_self_ping_ts"),
+                    "last_self_ping_status": KEEPALIVE_STATE.get("last_self_ping_status"),
+                },
+            })
             return
 
         if path == "/api/data":
@@ -759,12 +779,22 @@ class LivePlatformHandler(BaseHTTPRequestHandler):
         self._send_json({"error": "Not found"}, 404)
 
 
+KEEPALIVE_INTERVAL_SEC = int(os.environ.get("KEEPALIVE_INTERVAL_SEC", "240"))
+KEEPALIVE_STATE = {
+    "started_at": time.time(),
+    "last_self_ping_ts": None,
+    "last_self_ping_status": "pending",
+    "self_ping_count": 0,
+}
+
+
 def keep_alive_self_ping_worker():
     """
     When RENDER_EXTERNAL_URL (automatically set by Render) or PUBLIC_URL is present,
-    pings the public /health endpoint every 10 minutes to prevent free-tier spin-down.
+    pings the public /ping endpoint periodically to supplement external monitors and
+    surface connectivity health.
     """
-    time.sleep(30)
+    time.sleep(25)
     while True:
         target_url = (
             os.environ.get("RENDER_EXTERNAL_URL")
@@ -774,21 +804,70 @@ def keep_alive_self_ping_worker():
         if target_url:
             try:
                 req = urllib.request.Request(
-                    f"{target_url}/health",
-                    headers={"User-Agent": "Maryland-OTC-KeepAlive/1.0"}
+                    f"{target_url}/ping",
+                    headers={"User-Agent": "Maryland-OTC-KeepAlive/2.0"}
                 )
-                with urllib.request.urlopen(req, timeout=15) as resp:
+                with urllib.request.urlopen(req, timeout=20) as resp:
                     _ = resp.read()
+                    KEEPALIVE_STATE["last_self_ping_status"] = f"HTTP {resp.status}"
             except Exception as e:
-                print(f"[Keep-Alive Notice] Self-ping to {target_url}/health: {e}")
-        time.sleep(600)
+                KEEPALIVE_STATE["last_self_ping_status"] = f"error: {e}"
+                print(f"[Keep-Alive Notice] Self-ping to {target_url}/ping: {e}")
+            finally:
+                KEEPALIVE_STATE["last_self_ping_ts"] = time.time()
+                KEEPALIVE_STATE["self_ping_count"] += 1
+        time.sleep(KEEPALIVE_INTERVAL_SEC)
+
+
+def bot_supervisor_worker():
+    """
+    Watchdog supervisor for the Telegram polling thread. Restarts the polling
+    worker cleanly if it ever exits or stops updating its poll heartbeat.
+    """
+    from real_estate_telegram_bot import BOT_STATE, get_bot_health
+
+    first_launch = True
+    while True:
+        send_ping = first_launch
+        worker = threading.Thread(
+            target=run_bot_loop,
+            kwargs={"start_auto_sync": True, "send_startup_ping": send_ping},
+            daemon=True,
+        )
+        worker.start()
+        first_launch = False
+
+        # Give polling loop up to 90s to enter steady state
+        time.sleep(45)
+        while worker.is_alive():
+            time.sleep(30)
+            health = get_bot_health()
+            poll_age = health.get("last_poll_age_sec")
+            if poll_age is not None and poll_age > 180:
+                print(
+                    f"[Bot Watchdog] Telegram poll heartbeat stalled ({poll_age}s old); "
+                    "spawning replacement polling worker..."
+                )
+                break
+
+        BOT_STATE["restarts"] = BOT_STATE.get("restarts", 0) + 1
+        print(f"[Bot Watchdog] Restarting Telegram bot worker (restart #{BOT_STATE['restarts']}) in 5s...")
+        time.sleep(5)
 
 
 def start_server():
+    KEEPALIVE_STATE["started_at"] = time.time()
+    try:
+        from mindmap_sync import refresh_all_mindmaps
+        sync_res = refresh_all_mindmaps()
+        print(f"Synced Obsidian Mindmaps & Canvas ({sync_res['nodes']} nodes, {sync_res['edges']} edges).")
+    except Exception as e:
+        print(f"Notice syncing mindmaps on startup: {e}")
+
     if ENABLE_TELEGRAM_BOT:
-        bot_thread = threading.Thread(target=run_bot_loop, kwargs={"start_auto_sync": True}, daemon=True)
-        bot_thread.start()
-        print("Started Telegram Bot + 12h County OTC Auto-Sync daemon thread.")
+        supervisor_thread = threading.Thread(target=bot_supervisor_worker, daemon=True)
+        supervisor_thread.start()
+        print("Started self-healing Telegram Bot Supervisor + 12h County OTC Auto-Sync daemon thread.")
 
     ping_thread = threading.Thread(target=keep_alive_self_ping_worker, daemon=True)
     ping_thread.start()
