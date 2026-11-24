@@ -6,6 +6,16 @@ import html
 import openpyxl
 import requests
 from bs4 import BeautifulSoup
+from illinois_parcel_engine import (
+    IL_COUNTIES_31,
+    IL_COUNTY_ALIASES,
+    normalize_il_county,
+    is_illinois_pin_pattern,
+    search_illinois_parcel,
+    format_illinois_dossier_html,
+    format_illinois_county_card_html,
+    format_illinois_overview_html,
+)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 RAW_DIR = os.path.join(BASE_DIR, "raw")
@@ -53,6 +63,8 @@ STATE_NAMES_MAP = {
     "co": "CO",
     "indiana": "IN",
     "in": "IN",
+    "illinois": "IL",
+    "il": "IL",
     "maryland": "MD",
     "md": "MD",
 }
@@ -438,16 +450,16 @@ def grade_and_finalize_record(d):
 def _parse_county_state_from_filename(fname):
     """Extract (County, State) from raw spreadsheet filename."""
     base = os.path.basename(fname)
-    m = re.search(r'([A-Za-z\s]+?)\s+County\s+(Colorado|Indiana|Maryland|CO|IN|MD)', base, re.I)
+    m = re.search(r'([A-Za-z\.\s]+?)\s+County\s+(Colorado|Indiana|Illinois|Maryland|CO|IN|IL|MD)', base, re.I)
     if m:
         raw_c = m.group(1).strip()
         # Strip leading year if present
         raw_c = re.sub(r'^\d{4}\s+', '', raw_c).strip()
         raw_s = m.group(2).strip().lower()
         return raw_c.title(), STATE_NAMES_MAP.get(raw_s, raw_s.upper())
-    m2 = re.search(r'^([A-Za-z]+)_County_(CO|IN|MD)', base, re.I)
+    m2 = re.search(r'^([A-Za-z_]+)_County_(CO|IN|IL|MD)', base, re.I)
     if m2:
-        return m2.group(1).title(), m2.group(2).upper()
+        return m2.group(1).replace("_", " ").title(), m2.group(2).upper()
     return None, None
 
 
@@ -602,44 +614,87 @@ def parse_query_intent(raw_query):
     Examples:
       'R017432' -> (None, None, 'R017432')
       'Conejos R017432' -> ('conejos', 'CO', 'R017432')
-      'R017432 Conejos County' -> ('conejos', 'CO', 'R017432')
-      'Gilpin R003229' -> ('gilpin', 'CO', 'R003229')
+      'Cook 33-31-402-022-0000' -> ('cook', 'IL', '33-31-402-022-0000')
+      'DuPage 06-15-117-021' -> ('dupage', 'IL', '06-15-117-021')
+      '06-15-117-021' -> (None, 'IL', '06-15-117-021')
     """
     idx = ensure_index_loaded()
     q = str(raw_query or "").strip()
     county_hint = None
     state_hint = None
 
-    known_counties = set(idx["counties_meta"].keys()) | set(COLORADO_TYLER_SUBDOMAINS.keys()) | {"gunnison", "fulton"}
-    for ck in sorted(known_counties, key=len, reverse=True):
-        pat = rf'\b{re.escape(ck)}(?:\s+county)?\b'
-        if re.search(pat, q, re.I):
-            county_hint = ck
-            q = re.sub(pat, ' ', q, flags=re.I).strip()
-            if ck in idx["counties_meta"]:
-                state_hint = idx["counties_meta"][ck]["state"]
-            elif ck == "fulton":
-                state_hint = "IN"
-            else:
-                state_hint = "CO"
+    has_md_marker = bool(re.search(r'\b(MD|Maryland)\b', q, re.I))
+    has_co_marker = bool(re.search(r'\b(CO|Colorado)\b|\b[RNMP]\d{4,12}\b', q, re.I))
+    has_il_marker = bool(re.search(r'\b(IL|Illinois)\b', q, re.I)) or is_illinois_pin_pattern(q)
+
+    # 1. Check Illinois 31 counties first (safely avoiding false matches on MD street names like "White Oak Dr" or "Madison Ave")
+    # Common street/word county names require IL/Illinois marker, "County", or an IL PIN pattern/8+ digits
+    ambiguous_street_counties = {"white", "will", "lake", "madison", "jackson", "adams", "henry", "boone", "knox", "macon"}
+    if not has_md_marker:
+        for alias in sorted(IL_COUNTY_ALIASES.keys(), key=len, reverse=True):
+            ck_il = IL_COUNTY_ALIASES[alias]
+            pat = rf'\b{re.escape(alias)}(?:\s+county)?\b'
+            m_alias = re.search(pat, q, re.I)
+            if not m_alias:
+                continue
+            # Disambiguate Lake County CO vs Lake County IL
+            if ck_il == "lake" and has_co_marker and not has_il_marker:
+                continue
+            rem = re.sub(pat, ' ', q, count=1, flags=re.I).strip(" ,;-")
+            rem_clean = re.sub(r'^(?:IL|Illinois)\b|\b(?:IL|Illinois)$', '', rem, flags=re.I).strip(" ,;-")
+            rem_digits = re.sub(r'[^0-9]', '', rem_clean)
+            explicit_county_word = bool(re.search(rf'\b{re.escape(alias)}\s+county\b', q, re.I))
+            looks_like_il_pin = is_illinois_pin_pattern(rem_clean) or (len(rem_digits) >= 10 and len(rem_digits) >= len(re.sub(r'[\s\-\.]', '', rem_clean)) * 0.8)
+            if ck_il in ambiguous_street_counties and not (has_il_marker or explicit_county_word or looks_like_il_pin):
+                continue
+            county_hint = ck_il
+            state_hint = "IL"
+            q = rem_clean or raw_query.strip()
             break
+
+    # 2. Check Colorado / Indiana / locally indexed counties if not matched to Illinois (never hijack MD addresses)
+    co_ambiguous = {"lake", "park", "grand", "delta", "clearcreek"}
+    if not county_hint and not has_md_marker:
+        known_counties = set(idx["counties_meta"].keys()) | set(COLORADO_TYLER_SUBDOMAINS.keys()) | {"gunnison", "fulton"}
+        for ck in sorted(known_counties, key=len, reverse=True):
+            pat = rf'\b{re.escape(ck)}(?:\s+county)?\b'
+            if re.search(pat, q, re.I):
+                if ck in co_ambiguous and not (has_co_marker or re.search(rf'\b{re.escape(ck)}\s+county\b', q, re.I)):
+                    continue
+                county_hint = ck
+                q = re.sub(pat, ' ', q, flags=re.I).strip()
+                if ck in idx["counties_meta"]:
+                    state_hint = idx["counties_meta"][ck]["state"]
+                elif ck == "fulton":
+                    state_hint = "IN"
+                else:
+                    state_hint = "CO"
+                break
+
+    # 3. Standalone Illinois PIN or explicit IL marker without county name
+    if not state_hint and (is_illinois_pin_pattern(q) or has_il_marker):
+        state_hint = "IL"
+        q = re.sub(r'^(?:IL|Illinois)\b|\b(?:IL|Illinois)$', '', q, flags=re.I).strip(" ,;-")
 
     # Strip trailing/leading state code if county was matched
     if county_hint:
-        q = re.sub(r'^(?:CO|IN|MD|Colorado|Indiana|Maryland)\b|\b(?:CO|IN|MD|Colorado|Indiana|Maryland)$', '', q, flags=re.I).strip(" ,;-")
+        q = re.sub(r'^(?:CO|IN|IL|MD|Colorado|Indiana|Illinois|Maryland)\b|\b(?:CO|IN|IL|MD|Colorado|Indiana|Illinois|Maryland)$', '', q, flags=re.I).strip(" ,;-")
 
     return county_hint, state_hint, (q or raw_query.strip())
 
 
 def is_non_maryland_parcel_pattern(query_str, county_hint=None, state_hint=None):
     """
-    Returns True if the query is clearly a Colorado or Indiana parcel/account ID or county,
+    Returns True if the query is clearly a Colorado, Illinois, or Indiana parcel/account ID or county,
     preventing false fallback to Maryland SDAT.
     """
     if county_hint or (state_hint and state_hint != "MD"):
         return True
     q = str(query_str or "").strip().upper()
-    # Colorado Assessor Account pattern: R017432, R003229, N011510, M001234, P001234, or 12-digit CO schedule/parcel
+    # Illinois standardized PINs (10, 11 dotted, 12, 14, 15, 16-digit)
+    if is_illinois_pin_pattern(q):
+        return True
+    # Colorado Assessor Account pattern: R017432, R003229, N011510, M001234, P001234
     if re.match(r'^[RNMP]\d{4,12}$', q):
         return True
     # Gunnison 12-digit hyphenated parcel e.g. 3701-000-00-001
@@ -659,9 +714,35 @@ def search_parcel_intelligent(raw_query, county_override=None):
     idx = ensure_index_loaded()
     county_hint, state_hint, cleaned_q = parse_query_intent(raw_query)
     if county_override:
-        county_hint = county_override.lower().strip()
-        if county_hint in idx["counties_meta"]:
-            state_hint = idx["counties_meta"][county_hint]["state"]
+        il_ov = normalize_il_county(county_override)
+        if il_ov and (county_override.lower().strip() != "lake" or not re.match(r'^[RNMP]\d{4,12}$', cleaned_q.strip().upper())):
+            county_hint = il_ov
+            state_hint = "IL"
+        else:
+            county_hint = county_override.lower().strip()
+            if county_hint in idx["counties_meta"]:
+                state_hint = idx["counties_meta"][county_hint]["state"]
+
+    # Direct Illinois live routing (31 Priority Counties + Live GIS / Cook Socrata APIs)
+    if state_hint == "IL" or (not county_hint and is_illinois_pin_pattern(cleaned_q)):
+        # Check if any local IL tax sale export spreadsheet has a match first
+        q_norm_il = _norm_parcel(cleaned_q)
+        local_il = []
+        if q_norm_il in idx["by_parcel"]:
+            local_il = [c for c in idx["by_parcel"][q_norm_il] if c.get("state") == "IL"]
+        live_il = search_illinois_parcel(cleaned_q, county_override=county_hint)
+        if local_il and live_il:
+            # Merge auction face_amount/sale_no from local export into live enriched parcel
+            merged = dict(live_il[0])
+            for k in ("face_amount", "sale_no", "item_id", "batch"):
+                if local_il[0].get(k) not in (None, "", 0, 0.0):
+                    merged[k] = local_il[0][k]
+            return [merged]
+        if live_il:
+            return live_il
+        if local_il:
+            return local_il
+        return []
 
     q_up = cleaned_q.strip().upper()
     q_norm = _norm_parcel(q_up)
@@ -737,8 +818,10 @@ def search_parcel_intelligent(raw_query, county_override=None):
 
 def format_parcel_dossier_html(d):
     """Render a rich, state- and county-specific HTML card for Telegram with internal details and explicit URLs."""
-    county = (d.get("county") or "Unknown").upper()
     state = (d.get("state") or "CO").upper()
+    if state == "IL":
+        return format_illinois_dossier_html(d)
+    county = (d.get("county") or "Unknown").upper()
     parcel = html.escape(str(d.get("parcel") or "N/A"))
     state_pid = html.escape(str(d.get("state_parcel_id") or d.get("pin") or d.get("apn_pin") or ""))
     sale_no = html.escape(str(d.get("sale_no") or d.get("sale_id") or "N/A"))
@@ -851,7 +934,10 @@ def format_county_summary_html(county_key):
     """Render a summary of top Grade A & B deals and traps for a given county."""
     idx = ensure_index_loaded()
     ck = str(county_key or "").lower().strip()
+    il_ck = normalize_il_county(ck)
     deals = idx["by_county"].get(ck, [])
+    if not deals and il_ck and il_ck in IL_COUNTIES_31:
+        return format_illinois_county_card_html(il_ck)
     meta = idx["counties_meta"].get(ck, {"county": ck.title(), "state": "CO"})
     c_name = meta["county"].upper()
     st = meta["state"].upper()
@@ -934,12 +1020,14 @@ def format_all_counties_overview_html():
                 f"🏛️ <b>{c_title} County, {st}</b> (<code>/{ck}</code>) — <b>{len(deals)} foreclosure parcels</b>"
             )
     lines.extend([
+        "🌽 <b>Illinois 31-County Tax Lien Engine</b> (<code>/il</code>) — <b>22 Live API + 9 Portal Counties</b>",
+        "   🟢 Live API: Cook, DuPage, Lake, Kane, Will, McHenry, Kendall, Peoria, Tazewell, Rock Island, St. Clair, Madison, McLean, LaSalle, Macon, DeKalb, Grundy, Adams, Boone, Henry, Vermilion, Whiteside",
         "🦀 <b>Maryland Statewide SDAT &amp; County OTC</b> (24 Jurisdictions)",
         "",
         "💡 <b>How Intelligent Search Works:</b>",
-        "• Send any Parcel ID directly (e.g. <code>R017432</code>, <code>R001364</code>, <code>R003229</code>, <code>R074851</code>, <code>25-12-19-200-001.012-004</code>).",
-        "• Or specify County + Parcel (e.g. <code>Conejos R017432</code>, <code>Gilpin R003229</code>, <code>Gunnison R074851</code>).",
-        "• Drop any new County `.xlsx` export into `raw/` or Telegram chat and it is auto-indexed immediately!"
+        "• Send any Parcel ID directly (e.g. <code>33-31-402-022-0000</code>, <code>06-15-117-021</code>, <code>R017432</code>, <code>R074851</code>, <code>25-12-19-200-001.012-004</code>).",
+        "• Or specify County + Parcel (e.g. <code>/cook 33-31-402-022-0000</code>, <code>/dupage 06-15-117-021</code>, <code>Conejos R017432</code>).",
+        "• Drop any new County <code>.xlsx</code> / <code>.csv</code> / <code>.pdf</code> export into chat to auto-index immediately!"
     ])
     return "\n".join(lines)
 

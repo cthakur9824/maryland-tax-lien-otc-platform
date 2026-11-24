@@ -17,7 +17,7 @@
       "y": -160,
       "width": 530,
       "height": 220,
-      "text": "# Real Estate Research Command Hub\n**Last Synced:** `2026-11-23 17:37` *(Auto-Updated)*\n\n- **Owned Certificates (`TSB1377784`):** **`16` confirmed CO liens** (`$3,237.50` base / `$688,849` roll / `578.4 ac`)\n- **Wiki Knowledge Base:** `74` synthesized notes | `19` workbooks | `40` PDFs\n- **Maryland OTC Portfolio:** `1,003` unique parcels across 7 active counties + Carroll FY26\n- **Colorado 2026 Auctions:** `473` enriched parcels (`131` Sub-$1k Grade A/B flips)\n- **Yield Targets:** `13%` CO (`C.R.S. \u00a7 39-12-103`) | `10%-20%` MD statutory yield",
+      "text": "# Real Estate Research Command Hub\n**Last Synced:** `2026-11-24 13:01` *(Auto-Updated)*\n\n- **Owned Certificates (`TSB1377784`):** **`16` confirmed CO liens** (`$3,475.50` face | `$4,715.43` paid | `$1,239.93` surplus | `$37.65/mo`)\n- **Wiki Knowledge Base:** `75` synthesized notes | `19` workbooks | `40` PDFs\n- **Maryland OTC Portfolio:** `1,003` unique parcels across 7 active counties + Carroll FY26\n- **Colorado 2026 Auctions:** `473` enriched parcels (`131` Sub-$1k Grade A/B flips)\n- **Yield Targets:** `13%` CO (`C.R.S. \u00a7 39-12-103`) | `10%-20%` MD statutory yield",
       "color": "5"
     },
     {
@@ -57,7 +57,7 @@
       "y": -870,
       "width": 570,
       "height": 220,
-      "text": "## Active Buyer Portfolio \u2014 `TSB1377784`\n- **Buyer:** `CHETAN SINGH THAKUR` (`zeusauction.com` / SRI)\n- **Confirmed Logged:** **`16` CO certificates** (9 Gunnison, CO + 2 Gilpin, CO + 5 Conejos, CO | **13.0%** simple monthly)\n- **Totals:** `$3,237.50` export face | **`$688,849` roll value** (`$913k+` deed comps) | **`578.39` acres**\n- **Redemption / Deed Window:** 3-Yr Redemption -> **Nov 17\u201319, 2029** (`HB24-1056 / C.R.S. \u00a7 39-11.5` Option Auction)\n- **Status:** All 3 CO counties logged (Pending Exports: None)",
+      "text": "## Active Buyer Portfolio \u2014 `TSB1377784`\n- **Buyer:** `CHETAN SINGH THAKUR` (`zeusauction.com` / SRI)\n- **Confirmed Settled:** **`16` CO certificates** (9 Gunnison, CO + 2 Gilpin, CO + 5 Conejos, CO | **13.0%** simple monthly = **`$37.65/mo`**)\n- **Settled Financials:** `$3,475.50` live face | **`$4,715.43` paid** | **`$1,239.93` surplus** *(Blended BE: **Mo 33** | Gilpin+Conejos: **Mo 14**)*\n- **Collateral:** **`$688,849` roll value** (`$913k+` comps) | **`578.39` acres** | 3-Yr Redemption: **Nov 17\u201319, 2029**\n- **Status:** All 3 CO ZeusAuction Won Exports settled (Pending Exports: None)",
       "color": "5"
     },
     {
@@ -327,7 +327,17 @@
       "y": 290,
       "width": 410,
       "height": 240,
-      "text": "## Multi-State Tax Sale & Land Corridors\n- **Virginia (95 Counties / 38 Cities):** Judicial (`Va Code \u00a7 58.1-3965`) & Nonjudicial (`\u00a7 58.1-3975`) Tax Deeds \u2014 **0 post-sale redemption**; Special Commissioner deeds.\n- **Hampton Roads VA Land:** Chesapeake, Hampton, Yorktown, Poquoson perc/public utility infill lots (`$30k/$60k/$90k` buy boxes).\n- **Delaware Monition Sales:** New Castle, Kent, Sussex sheriff sales (`1-yr` redemption @ **15% penalty**).\n- **New Jersey Municipalities:** `564` towns (`0%` bid-down + premium, `2-yr` redemption).\n- **Indiana (Fulton County):** Nov 2026 Sheriff Sale routing integrated into parcel engine.",
+      "text": "## Multi-State Tax Sale & Land Corridors\n- **Illinois (31 Priority Counties, `/il`):** `22` Live ArcGIS/Socrata APIs (`Cook`, `DuPage`, `Lake`, `Kane`, `Peoria`, `Tazewell`, `St. Clair`...) + `9` DevNet/Assessor Portals (`35 ILCS 200`, `9%/6mo` = `18%/yr` max eff. 2024; `$0` premium; `ILTaxSale.com` Trustee OTC).\n- **Virginia (95 Counties / 38 Cities):** Judicial (`Va Code \u00a7 58.1-3965`) & Nonjudicial (`\u00a7 58.1-3975`) Tax Deeds \u2014 **0 post-sale redemption**.\n- **Delaware Monition Sales:** New Castle, Kent, Sussex (`1-yr` redemption @ **15% penalty**).\n- **New Jersey Municipalities:** `564` towns (`0%` bid-down + premium, `2-yr` redemption).\n- **Indiana (Fulton County):** Nov 2026 Sheriff Sale routing integrated into parcel engine.",
+      "color": "6"
+    },
+    {
+      "id": "reg_il_mkt",
+      "type": "file",
+      "file": "wiki/markets/Illinois Tax Lien Market - 31 Priority Counties.md",
+      "x": -1215,
+      "y": 775,
+      "width": 410,
+      "height": 85,
       "color": "6"
     },
     {
@@ -547,7 +557,17 @@
       "y": 290,
       "width": 420,
       "height": 235,
-      "text": "## Live Platform (`@RealestateResearch_bot` & Web UI)\n- **Web Dashboard:** `http://localhost:8080` (`app.py` + Render 24/7 keep-alive).\n- **Telegram Commands:** `/tax`, `/parcel`, `/5k`, `/gilpin`, `/gradea`, `/deals [county]`, `/sync`, `/import`.\n- **Multi-State Intelligence (`multi_state_parcel_engine.py`):**\n  - Auto-routes `R0*`/`N0*`/`M0*` CO IDs -> Conejos (`TylerHost`), Gilpin (`InfoEnvoy`), Gunnison (`Spatialest`) instead of false MD SDAT fallbacks.\n  - Emits direct **Assessor Card**, **Treasurer Account**, & **Google Maps GPS** links.\n- **Continuous Sync:** `12h` county crawler (`otc_manager.py`) + `mindmap_sync.py` auto-refreshes this Canvas & Mermaid mindmaps on every ingestion!",
+      "text": "## Live Platform (`@RealestateResearch_bot` & Web UI)\n- **Web Dashboard:** Render 24/7 + zero-login `/parcel?q=` (MD, IL, CO, IN) & `/api/il/counties`.\n- **Telegram Commands:** `/il`, `/cook`, `/dupage`, `/lake` (all 31 IL counties), `/conejos`, `/gilpin`, `/gunnison`, `/tax`, `/parcel`, `/gradea`, `/deals`, `/sync`.\n- **Multi-State Intelligence (`illinois_parcel_engine.py` + `multi_state_parcel_engine.py`):**\n  - Auto-routes IL PINs (`10/11/12/14/15/16-digit`) -> `22` Live ArcGIS/Socrata APIs & `9` Portal Deep-Links.\n  - Auto-routes `R0*`/`N0*`/`M0*` CO IDs -> Conejos (`TylerHost`), Gilpin (`InfoEnvoy`), Gunnison (`Spatialest`).\n- **Continuous Sync:** `12h` MD crawler + `mindmap_sync.py` auto-refreshes Canvas & Mind Maps!",
+      "color": "1"
+    },
+    {
+      "id": "bot_il",
+      "type": "file",
+      "file": "illinois_parcel_engine.py",
+      "x": 385,
+      "y": 650,
+      "width": 420,
+      "height": 85,
       "color": "1"
     },
     {

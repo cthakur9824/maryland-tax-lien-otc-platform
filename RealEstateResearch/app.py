@@ -19,6 +19,12 @@ from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 from sdat_engine import search_maryland_property
 from tax_lien_checker import inspect_property_tax_status, reload_otc_databases
 from title_search_engine import analyze_maryland_title
+from multi_state_parcel_engine import (
+    search_parcel_intelligent,
+    parse_query_intent,
+    is_non_maryland_parcel_pattern,
+)
+from illinois_parcel_engine import IL_COUNTIES_31
 from otc_manager import (
     import_otc_file,
     sync_all_county_websites,
@@ -727,14 +733,51 @@ class LivePlatformHandler(BaseHTTPRequestHandler):
                 self._send_json({"error": "CSV file not found"}, 404)
             return
 
+        if path == "/api/il/counties":
+            out = []
+            for ck, meta in sorted(IL_COUNTIES_31.items()):
+                out.append({
+                    "key": ck,
+                    "name": meta["name"],
+                    "region": meta["region"],
+                    "api_type": meta["api_type"],
+                    "pin_digits": meta["pin_digits"],
+                    "pin_example": meta["pin_example"],
+                    "assessor_url": meta.get("assessor_url", ""),
+                    "treasurer_url": meta.get("treasurer_url", ""),
+                    "trustee_url": meta.get("trustee_url", ""),
+                })
+            self._send_json({"state": "IL", "total_counties": len(out), "live_api_count": sum(1 for x in out if x["api_type"] != "portal"), "counties": out})
+            return
+
         if path == "/parcel":
             qs = urllib.parse.parse_qs(parsed.query)
             q = (qs.get("q") or [""])[0].strip()
             if not q:
                 self._send_json({"error": "Missing query parameter q"}, 400)
                 return
+            county_hint, state_hint, cleaned_q = parse_query_intent(q)
+            if is_non_maryland_parcel_pattern(cleaned_q, county_hint=county_hint, state_hint=state_hint):
+                ms_hits = search_parcel_intelligent(q)
+                if ms_hits:
+                    body = render_multistate_parcel_dossier_html(ms_hits[0]).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
             props = search_maryland_property(q)
             if not props:
+                ms_hits = search_parcel_intelligent(q)
+                if ms_hits:
+                    body = render_multistate_parcel_dossier_html(ms_hits[0]).encode("utf-8")
+                    self.send_response(200)
+                    self.send_header("Content-Type", "text/html; charset=utf-8")
+                    self.send_header("Content-Length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
                 not_found_html = (
                     "<!doctype html><html><head><meta charset='utf-8'>"
                     "<meta name='viewport' content='width=device-width,initial-scale=1'>"
@@ -765,8 +808,20 @@ class LivePlatformHandler(BaseHTTPRequestHandler):
             if not q:
                 self._send_json({"error": "Missing query parameter q"}, 400)
                 return
+            county_hint, state_hint, cleaned_q = parse_query_intent(q)
+            if is_non_maryland_parcel_pattern(cleaned_q, county_hint=county_hint, state_hint=state_hint):
+                ms_hits = search_parcel_intelligent(q)
+                if ms_hits:
+                    self._send_json({"status": "ok", "state": ms_hits[0].get("state", state_hint or "IL"), "parcel": ms_hits[0], "matches": ms_hits})
+                    return
+                self._send_json({"status": "not_found", "query": q, "state": state_hint}, 404)
+                return
             props = search_maryland_property(q)
             if not props:
+                ms_hits = search_parcel_intelligent(q)
+                if ms_hits:
+                    self._send_json({"status": "ok", "state": ms_hits[0].get("state", "CO"), "parcel": ms_hits[0], "matches": ms_hits})
+                    return
                 self._send_json({"status": "not_found", "query": q}, 404)
                 return
             prop = props[0]
@@ -774,6 +829,7 @@ class LivePlatformHandler(BaseHTTPRequestHandler):
             title_res = analyze_maryland_title(prop, tax_res)
             self._send_json({
                 "status": "ok",
+                "state": "MD",
                 "property": prop,
                 "tax_status": tax_res,
                 "title_confluence": title_res
@@ -944,6 +1000,107 @@ def render_parcel_dossier_html(prop: dict, tax_res: dict, title_res: dict) -> st
   <div class="card">
     <h2>Recommended Closing Contingencies</h2>
     <ol>{cont_items}</ol>
+  </div>
+</div>
+</body>
+</html>"""
+
+
+def render_multistate_parcel_dossier_html(d: dict) -> str:
+    """Render a mobile-friendly zero-login HTML parcel dossier for Illinois, Colorado, and Indiana."""
+    esc = html.escape
+    state = str(d.get("state") or "IL").upper()
+    county = str(d.get("county") or "Unknown")
+    pin = str(d.get("parcel") or "N/A")
+    raw_pin = str(d.get("state_parcel_id") or "")
+    situs = str(d.get("situs_address") or "See County Assessor Portal")
+    owner = str(d.get("owner") or "N/A")
+    mailing = str(d.get("mailing_address") or "N/A")
+    grade = str(d.get("grade") or "Verified")
+    decision = str(d.get("bid_decision") or "")
+    why = str(d.get("why_pick") or "")
+    legal = str(d.get("legal") or "N/A")
+    source = str(d.get("data_source") or f"{county} County, {state} Live GIS")
+
+    act = float(d.get("actual_val") or 0.0)
+    ass = float(d.get("assessed_val") or 0.0)
+    land = float(d.get("land_val") or 0.0)
+    imp = float(d.get("imp_val") or 0.0)
+    billed = float(d.get("total_billed") or d.get("face_amount") or 0.0)
+    tvr = float(d.get("tvr_pct") or 0.0)
+    acres = float(d.get("acres") or 0.0)
+    bldg_sf = float(d.get("bldg_sqft") or 0.0)
+    yr_built = str(d.get("year_built") or "N/A")
+    sale_price = float(d.get("sale_price") or 0.0)
+    sale_date = str(d.get("sale_date") or "N/A")
+
+    is_il = (state == "IL")
+    stat_banner = (
+        "<strong>2026 ILLINOIS STATUTORY RULES (35 ILCS 200):</strong> Bid-down penalty starting at "
+        "<strong>9% per 6 months (18%/yr max)</strong> under P.A. 103-0555 <em>(pre-2024 was 18%/6mo = 36%/yr)</em> | "
+        "<strong>$0 Non-Refundable Premium</strong> | Subsequent Taxes: <strong>12%/yr</strong> | "
+        "Redemption: <strong>2.5 yrs</strong> (1-6u Res) / <strong>2 yrs</strong> (Vacant) / <strong>6 mos</strong> (Comm/2+yr Vacant)"
+        if is_il else
+        f"<strong>{esc(state)} STATUTORY PROFILE:</strong> Grade <strong>{esc(grade)}</strong> — {esc(decision)}"
+    )
+
+    btns = []
+    if d.get("assessor_link"):
+        btns.append(f"<a class='btn' href='{esc(d['assessor_link'])}' target='_blank' rel='noopener'>Assessor / Property Card</a>")
+    if d.get("treasurer_link"):
+        btns.append(f"<a class='btn sec' href='{esc(d['treasurer_link'])}' target='_blank' rel='noopener'>County Treasurer / Tax Sale</a>")
+    if d.get("google_maps_url"):
+        btns.append(f"<a class='btn sec' href='{esc(d['google_maps_url'])}' target='_blank' rel='noopener'>Google Maps</a>")
+    if d.get("trustee_link"):
+        btns.append(f"<a class='btn sec' href='{esc(d['trustee_link'])}' target='_blank' rel='noopener'>ILTaxSale Trustee OTC</a>")
+    btns.append("<a class='btn sec' href='/'>Dashboard Home</a>")
+
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{esc(county)} County, {esc(state)} — {esc(pin)}</title>
+<style>
+  body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:16px;line-height:1.5}}
+  .wrap{{max-width:860px;margin:0 auto}}
+  .card{{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px;margin-bottom:16px}}
+  h1,h2{{margin:0 0 10px 0;color:#f8fafc}}
+  h1{{font-size:1.35rem}} h2{{font-size:1.05rem;color:#38bdf8;border-bottom:1px solid #334155;padding-bottom:6px}}
+  .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}}
+  .kv{{background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155}}
+  .k{{font-size:.75rem;color:#94a3b8;text-transform:uppercase}} .v{{font-size:.98rem;font-weight:600;color:#f8fafc;word-break:break-word}}
+  .banner{{background:#0c4a6e;border:1px solid #38bdf8;padding:12px;border-radius:10px;margin:14px 0;font-size:.9rem}}
+  .btn{{display:inline-block;background:#0284c7;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:.86rem;font-weight:600;margin:4px 6px 4px 0}}
+  .btn.sec{{background:#334155}}
+  code{{background:#0f172a;padding:2px 6px;border-radius:4px;color:#7dd3fc}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div style="font-size:.82rem;color:#94a3b8">{esc(source)} (Zero-Login Live Dossier)</div>
+    <h1>{esc(situs)}</h1>
+    <div>PIN: <code>{esc(pin)}</code>{f' | Raw: <code>{esc(raw_pin)}</code>' if raw_pin and raw_pin != pin else ''} | <strong>{esc(county)} County, {esc(state)}</strong> | Grade: <strong>{esc(grade)}</strong></div>
+    <div class="banner">{stat_banner}</div>
+    <div>{''.join(btns)}</div>
+  </div>
+  <div class="card">
+    <h2>Valuation, Property &amp; Tax Profile</h2>
+    <div class="grid">
+      <div class="kv"><div class="k">Est. Full Market Value</div><div class="v">{esc(_fmt_money(act))}</div></div>
+      <div class="kv"><div class="k">Assessed / EAV</div><div class="v">{esc(_fmt_money(ass))}</div></div>
+      <div class="kv"><div class="k">Land / Improvement Val</div><div class="v">{esc(_fmt_money(land))} / {esc(_fmt_money(imp))}</div></div>
+      <div class="kv"><div class="k">Annual Tax / Lien Face</div><div class="v">{f'${billed:,.2f}' if billed > 0 else 'Verify Treasurer'} ({f'{tvr:.2f}% TVR' if tvr > 0 else 'N/A'})</div></div>
+      <div class="kv"><div class="k">Acreage / Bldg Sq Ft</div><div class="v">{f'{acres:.2f} ac' if acres > 0 else 'N/A'} | {f'{bldg_sf:,.0f} sf' if bldg_sf > 0 else 'N/A'}</div></div>
+      <div class="kv"><div class="k">Year Built / Last Sale</div><div class="v">{esc(yr_built)} | {esc(_fmt_money(sale_price))} ({esc(sale_date)})</div></div>
+      <div class="kv"><div class="k">Property Class</div><div class="v">{esc(str(d.get('prop_type') or 'N/A'))}</div></div>
+      <div class="kv"><div class="k">Township / Tax Code</div><div class="v">{esc(str(d.get('township') or 'N/A'))} | {esc(str(d.get('tax_code') or 'N/A'))}</div></div>
+    </div>
+    <p style="margin:12px 0 0 0"><strong>Owner / Taxpayer:</strong> {esc(owner)}</p>
+    <p style="margin:6px 0 0 0"><strong>Mailing Address:</strong> {esc(mailing)} {'(Absentee Owner)' if d.get('is_absentee') else ''}</p>
+    <p style="margin:6px 0 0 0"><strong>Underwriting Verdict:</strong> {esc(decision)} — {esc(why)}</p>
+    <p style="margin:6px 0 0 0"><strong>Legal Description:</strong> <code>{esc(legal)}</code></p>
   </div>
 </div>
 </body>

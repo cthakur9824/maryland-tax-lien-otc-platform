@@ -10,6 +10,7 @@ Welcome to the Real Estate Research Knowledge Base. This index is maintained by 
 * [[Delaware Monition and Tax Deed Market]] - Monition sheriff sales across New Castle, Kent, and Sussex counties, CourtConnect dockets, FirstMap GIS, and 1-year redemption @ 15% penalty.
 * [[Fort Lauderdale Market]] - Stable secondary market with flat vacancy at 4.8% and 5.10% cap rates.
 * [[Hampton Roads Virginia Land Market]] - Land market, utility infrastructure, perc rules, and zoning for Chesapeake, Hampton, Yorktown, and Poquoson VA.
+* [[Illinois Tax Lien Market - 31 Priority Counties]] - 31-county Illinois tax lien handbook (`35 ILCS 200`, `P.A. 103-0555` 9%/6mo cap vs pre-2024 18%/6mo, `ILTaxSale.com` Trustee OTC) wired to 22 live ArcGIS/Socrata APIs and 9 DevNet/Assessor portals in the Telegram bot.
 * [[Maryland Mind Map]] - Structural mind map categorizing multifamily, single-family, utility connections, perc lots, farming lands, and tax sale channels.
 * [[Miami Market]] - Q2 2026 vacancy at 4.2%, rents at $2,550/mo, 4.75% Class A cap rate.
 * [[New Jersey Municipal Tax Sale Market]] - Municipal tax sale certificates across 564 NJ municipalities and 21 counties, NJGIN Property Explorer, bid-down to 0% + premium, and 2-year redemption.
@@ -40,7 +41,7 @@ Welcome to the Real Estate Research Knowledge Base. This index is maintained by 
 * [[Zoning]] - Land use classifications and entitlement strategies for flipping land to builders.
 
 ## 📊 Synthesis & Portfolio Strategy
-* [[Portfolio - 2026 Tax Lien Certificates Owned]] - Active buyer ledger (`TSB1377784` / CHETAN SINGH THAKUR) tracking 16 confirmed Colorado 2026 tax lien certificates (9 Gunnison CO + 2 Gilpin CO + 5 Conejos CO totaling \$3,237.50 export face, \$688,849 actual roll value, 578.39 acres @ 13% interest), HB24-1056 deed option milestones, and county/SRI servicing contacts.
+* [[Portfolio - 2026 Tax Lien Certificates Owned]] - Active buyer ledger (`TSB1377784` / CHETAN SINGH THAKUR) tracking 16 settled Colorado 2026 tax lien certificates (9 Gunnison + 2 Gilpin + 5 Conejos: \$3,475.50 live face, \$4,715.43 total paid, \$1,239.93 non-refundable surplus, \$37.65/mo @ 13%, exact break-even recovery schedule, HB24-1056 milestones, and county/SRI servicing contacts).
 * [[Real Estate Research Master Mind Map]] - Auto-synced multi-state research mind map & Obsidian Canvas hub covering Maryland (24 counties + Carroll FY26), Colorado (Conejos/Gilpin/Gunnison), Mid-Atlantic tax deeds (VA/DE/NJ), Indiana, land playbooks, and live automation.
 * [[Conejos County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] - Complete 174-parcel due diligence, Conejos County TylerHost & 2026 SLVGIS parcel polygon enrichment, 99 sub-\$1,000 Face Bid Grade A & B deals, 40–80 acre land-flip candidates, and severed mineral (5170) trap disqualifications for Conejos County, CO.
 * [[Gilpin County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] - Complete 126-parcel due diligence, Gilpin InfoEnvoy 2026 Assessor & GIS valuation enrichment, 28 Grade A & B deals, rural acreage land-flip candidates, and mining/MRO trap disqualifications for Gilpin County, CO.
@@ -90,6 +91,7 @@ Welcome to the Real Estate Research Knowledge Base. This index is maintained by 
 ---
 
 ## 📥 Ingested Sources Log
+* [ZeusAuction Won Parcels - Gunnison, Gilpin & Conejos CO (TSB1377784)](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/uploads/Won%20Parcels%20(3).xlsx) - Official ZeusAuction won-parcel exports ([Gunnison](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/uploads/Won%20Parcels%20(3).xlsx), [Gilpin](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/uploads/Won%20Parcels%20(4).xlsx), [Conejos](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/uploads/Won%20Parcels%20(5).xlsx)) recording settled live face amounts, winning bids, proxy caps, and non-refundable surplus premiums across all 16 certificates (November 23, 2026).
 * [2026 Gilpin County Colorado Tax Lien Sale - Full Export](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gilpin%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Full%20Export.xlsx) - Official 126-parcel Gilpin County, CO tax lien auction export enriched with live 2026 InfoEnvoy Assessor & GIS valuations (November 13, 2026).
 * [2026 Gunnison County Colorado Tax Lien Sale - Full Export](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/2026%20Gunnison%20County%20Colorado%20Tax%20Lien%20Sale%20-%20Full%20Export.xlsx) - Official 173-parcel Gunnison County, CO tax lien auction export enriched with live 2026 Spatialest Assessor & GIS valuations (November 13, 2026).
 * [Delaware Monition, Sheriff Sale & Parcel Research Directory](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/md-files/Delaware.md) - Statewide monition sale overview, CourtConnect dockets, FirstMap GIS, and county directory (September 16, 2026).

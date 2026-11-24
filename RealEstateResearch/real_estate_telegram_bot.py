@@ -39,6 +39,14 @@ from multi_state_parcel_engine import (
     is_non_maryland_parcel_pattern,
     ensure_index_loaded,
 )
+from illinois_parcel_engine import (
+    IL_COUNTIES_31,
+    normalize_il_county,
+    search_illinois_parcel,
+    format_illinois_dossier_html,
+    format_illinois_county_card_html,
+    format_illinois_overview_html,
+)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -701,9 +709,9 @@ def run_bot_loop(start_auto_sync: bool = True, send_startup_ping: bool = True):
                 BOT_TOKEN,
                 DEFAULT_CHAT_ID,
                 "🚀 <b>Multi-State Real Estate &amp; Tax Lien Intelligence Bot Online!</b>\n"
-                "• <b>Active County Exports:</b> Conejos CO (<code>/conejos</code>), Gilpin CO (<code>/gilpin</code>), Gunnison CO (<code>/gunnison</code>), Fulton IN (<code>/fulton</code>), + Maryland SDAT\n"
-                "• <b>Intelligent Parcel Routing:</b> Send any parcel ID (e.g. <code>R017432</code>, <code>R001364</code>, <code>R003229</code>, <code>R074851</code>) or <code>&lt;County&gt; &lt;Parcel#&gt;</code> for instant state &amp; county underwriting!\n"
-                "• Send <code>/counties</code> to inspect all active state &amp; county databases."
+                "• <b>Active Jurisdictions:</b> 🌽 <b>Illinois 31 Counties</b> (<code>/il</code>, <code>/cook</code>, <code>/dupage</code>, <code>/lake</code>...) | 🏔️ <b>Colorado</b> (<code>/conejos</code>, <code>/gilpin</code>, <code>/gunnison</code>) | 🏛️ <b>Indiana</b> (<code>/fulton</code>) | 🦀 <b>Maryland SDAT &amp; OTC</b>\n"
+                "• <b>Instant Parcel Routing:</b> Send any IL PIN (e.g. <code>33-31-402-022-0000</code>, <code>06-15-117-021</code>), CO ID (<code>R017432</code>), or MD address/APN!\n"
+                "• Send <code>/il</code> for all 31 Illinois counties or <code>/counties</code> for all active databases."
             )
         except Exception as e:
             print(f"Startup notification notice: {e}")
@@ -805,17 +813,20 @@ def run_bot_loop(start_auto_sync: bool = True, send_startup_ping: bool = True):
                 if cmd in ["/start", "/help"]:
                     help_txt = (
                         "🏛 *MULTI-STATE REAL ESTATE & TAX LIEN INTELLIGENCE BOT*\n\n"
-                        "Send me any Parcel ID (e.g. `R017432`, `R001364`, `R003229`, `R074851`, `25-12-19-200-001.012-004`), County + Parcel (e.g. `Conejos R017432`), or Maryland address!\n\n"
-                        "*Multi-State County Tax Sale Commands:*\n"
+                        "Send me any Parcel ID directly — **Illinois PIN** (`33-31-402-022-0000`, `06-15-117-021`, `21-35.0-300-010`), **Colorado** (`R017432`, `R074851`), **Indiana** (`25-12-19-200-001.012-004`), or **Maryland** address/APN!\n\n"
+                        "*Illinois 31-County Live Tax Lien Commands:*\n"
+                        "• `/il` or `/illinois` - 🌽 *View All 31 Illinois Priority Counties (22 Live API + 9 Portal)*\n"
+                        "• `/<county> [PIN or Street]` - 🌽 *Query ANY of the 31 IL Counties directly (e.g. `/cook 33-31-402-022-0000`, `/dupage 06-15-117-021`, `/peoria 17-26-329-017`, `/tazewell 23-23-22-307-010`, `/stclair 21-35.0-300-010`, `/lake`, `/kane`, `/will`)*\n\n"
+                        "*Colorado & Indiana Tax Sale Commands:*\n"
                         "• `/counties` - 🗺 *View All Active State & County Tax Sale Databases*\n"
-                        "• `/conejos [query]` - 🏔 *Conejos County, CO 2026 Tax Lien Parcels (e.g. `R017432`, `R001364`)*\n"
-                        "• `/gilpin [query]` - 🏔 *Gilpin County, CO 2026 Tax Lien Parcels (e.g. `R003229`, `R000435`)*\n"
-                        "• `/gunnison [query]` - 🏔 *Gunnison County, CO 2026 Tax Lien Parcels (e.g. `R074851`)*\n"
+                        "• `/conejos [query]` - 🏔 *Conejos County, CO 2026 Tax Lien Parcels*\n"
+                        "• `/gilpin [query]` - 🏔 *Gilpin County, CO 2026 Tax Lien Parcels*\n"
+                        "• `/gunnison [query]` - 🏔 *Gunnison County, CO 2026 Tax Lien Parcels*\n"
                         "• `/fulton [query]` - 🏛 *Fulton County, IN Sheriff Sale Parcels*\n"
                         "• `/5k` or `/budget` - 🏔 *Gunnison County CO $5,000 Budget Bid Plan*\n\n"
                         "*Maryland Property & Title Commands:*\n"
                         "• `/lookup <address>` - Query SDAT, Zoning, Lot Size & Deed History\n"
-                        "• `/parcel <APN>` - Search directly by Account/Parcel ID\n"
+                        "• `/parcel <APN>` - Search directly by Account/Parcel ID (MD, IL, CO, IN)\n"
                         "• `/title <address or APN>` - 📜 *Title Search, Chain of Title & Confluence Score*\n"
                         "• `/tax <address or APN>` - Inspect county tax bill & OTC lien status\n"
                         "• `/offer <address or APN>` - Calculate investor bidding & offer strategy\n"
@@ -829,6 +840,45 @@ def run_bot_loop(start_auto_sync: bool = True, send_startup_ping: bool = True):
 
                 elif cmd == "/counties":
                     send_telegram_message(BOT_TOKEN, chat_id, format_all_counties_overview_html())
+
+                elif cmd in ["/il", "/illinois"]:
+                    if not args:
+                        send_telegram_message(BOT_TOKEN, chat_id, format_illinois_overview_html())
+                    else:
+                        # Check if args is purely a county name (e.g. "/il dupage" or "/il St Clair")
+                        il_only = normalize_il_county(args)
+                        if il_only and il_only in IL_COUNTIES_31:
+                            send_telegram_message(BOT_TOKEN, chat_id, format_illinois_county_card_html(il_only))
+                        else:
+                            il_hits = search_illinois_parcel(args)
+                            if il_hits:
+                                for ih in il_hits[:3]:
+                                    send_telegram_message(BOT_TOKEN, chat_id, format_illinois_dossier_html(ih))
+                            else:
+                                send_telegram_message(
+                                    BOT_TOKEN,
+                                    chat_id,
+                                    f"❌ No Illinois parcel found matching <code>{args}</code>.\n"
+                                    f"• <i>Tip: Include county + PIN (e.g. <code>/dupage 06-15-117-021</code> or <code>/cook 33-31-402-022-0000</code>), or send <code>/il</code> for all 31 counties.</i>"
+                                )
+
+                elif cmd.startswith("/") and normalize_il_county(cmd.lstrip("/")) in IL_COUNTIES_31:
+                    il_ck = normalize_il_county(cmd.lstrip("/"))
+                    if not args:
+                        send_telegram_message(BOT_TOKEN, chat_id, format_illinois_county_card_html(il_ck))
+                    else:
+                        il_hits = search_illinois_parcel(args, county_override=il_ck)
+                        if il_hits:
+                            for ih in il_hits[:3]:
+                                send_telegram_message(BOT_TOKEN, chat_id, format_illinois_dossier_html(ih))
+                        else:
+                            c_meta = IL_COUNTIES_31[il_ck]
+                            send_telegram_message(
+                                BOT_TOKEN,
+                                chat_id,
+                                f"❌ No {c_meta['name']} County, IL parcel found matching <code>{args}</code>.\n"
+                                f"• <i>Expected PIN format: <code>{c_meta['pin_example']}</code> (or try a street name/owner).</i>"
+                            )
 
                 elif cmd in ["/5k", "/budget"]:
                     send_telegram_message(BOT_TOKEN, chat_id, format_gunnison_5k_budget())
@@ -978,15 +1028,15 @@ def run_bot_loop(start_auto_sync: bool = True, send_startup_ping: bool = True):
                                 send_telegram_message(BOT_TOKEN, chat_id, format_parcel_dossier_html(m))
                         continue
 
-                    # 2. Prevent Colorado/Indiana parcel IDs or county queries from falsely routing to Maryland SDAT
+                    # 2. Prevent Illinois/Colorado/Indiana parcel IDs or county queries from falsely routing to Maryland SDAT
                     if is_non_maryland_parcel_pattern(cleaned_q, county_hint=county_hint, state_hint=state_hint):
-                        target_label = f"{county_hint.title()} County, {state_hint}" if county_hint else "Colorado / Indiana County Tax & GIS Portals"
+                        target_label = f"{county_hint.title()} County, {state_hint}" if county_hint else "Illinois / Colorado / Indiana County Tax & GIS Portals"
                         send_telegram_message(
                             BOT_TOKEN,
                             chat_id,
                             f"❌ <b>No property record found for</b> <code>{query}</code> in <b>{target_label}</b>.\n"
-                            f"• <i>Checked active tax sale exports: Conejos CO, Gilpin CO, Gunnison CO, Fulton IN, and live County Treasurer / GIS portals.</i>\n"
-                            f"• <i>Tip: Send</i> <code>/counties</code> <i>to view all indexed counties, or specify</i> <code>&lt;County&gt; &lt;Parcel#&gt;</code>."
+                            f"• <i>Checked live Illinois (31 counties), Colorado (Conejos, Gilpin, Gunnison + GIS), and Indiana portals.</i>\n"
+                            f"• <i>Tip: Send</i> <code>/il</code> <i>for all 31 IL counties,</i> <code>/counties</code> <i>for all states, or specify</i> <code>&lt;County&gt; &lt;PIN&gt;</code>."
                         )
                         continue
 

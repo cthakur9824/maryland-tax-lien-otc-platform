@@ -2,7 +2,7 @@
 category: market
 tags: [maryland, mind-map, multifamily, single-family, land, zoning, tax-liens, tax-sales, otc-tax-liens, anne-arundel, carroll-county, prince-georges, baltimore-city]
 created: 2026-07-14
-updated: 2026-11-23
+updated: 2026-11-24
 sources:
   - "Synthesized from Maryland Department of the Environment (MDE) and local health department guidelines"
   - "[Blueprint Chetan Thakur](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Blueprint_chetan_thakur.pdf)"
@@ -15,7 +15,7 @@ sources:
 
 This page presents the **live, auto-updated** structural mind map of the Maryland real estate market across residential sectors, utility/perc rules, agricultural zoning, **24-jurisdiction tax lien & OTC acquisition channels**, and direct county purchase desks. *(For all states including Colorado, Virginia, Delaware, New Jersey, and Indiana, see [[Real Estate Research Master Mind Map]] and [`Real Estate Research Mindmap.canvas`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/Real%20Estate%20Research%20Mindmap.canvas).)*
 
-> **Auto-Synced Telemetry (`2026-11-23 17:37`):** **`1,003` unique MD OTC parcels** indexed across **7 synced counties** + **3 live Carroll County FY26 County-Held (`Bidder #1`) certificates**.
+> **Auto-Synced Telemetry (`2026-11-24 13:01`):** **`1,003` unique MD OTC parcels** indexed across **7 synced counties** + **3 live Carroll County FY26 County-Held (`Bidder #1`) certificates**.
 
 ---
 

@@ -121,16 +121,28 @@ def collect_live_metrics() -> Dict[str, Any]:
     # 3. Owned Tax Lien Certificates Portfolio
     owned_data = _load_json(SCRATCH_DIR / "owned_certificates_portfolio.json", {})
     owned_certs = owned_data.get("certificates", []) if isinstance(owned_data, dict) else []
+    owned_summary = owned_data.get("settlement_summary", {}) if isinstance(owned_data, dict) else {}
     owned_by_county: Dict[str, int] = {}
     owned_face = 0.0
+    owned_live_face = 0.0
+    owned_paid = 0.0
+    owned_surplus = 0.0
     owned_actual = 0.0
     owned_acres = 0.0
     for c in owned_certs:
         cname = f"{c.get('county', 'Unknown')}, {c.get('state', '')}".strip(", ")
         owned_by_county[cname] = owned_by_county.get(cname, 0) + 1
-        owned_face += float(c.get("export_face_amount") or 0)
+        eface = float(c.get("export_face_amount") or 0)
+        lface = float(c.get("live_zeus_face_amount") or eface)
+        wbid = float(c.get("winning_bid") or lface)
+        owned_face += eface
+        owned_live_face += lface
+        owned_paid += wbid
+        owned_surplus += float(c.get("surplus_paid") or max(0.0, wbid - lface))
         owned_actual += float(c.get("total_actual_value") or 0)
         owned_acres += float(c.get("acres") or 0)
+    owned_monthly_int = float(owned_summary.get("monthly_interest_total") or (owned_live_face * 0.13 / 12.0))
+    owned_be_mo = int(owned_summary.get("blended_break_even_months") or 0)
 
     # 4. Vault File Inventory
     wiki_files = list(WIKI_DIR.rglob("*.md")) if WIKI_DIR.exists() else []
@@ -176,6 +188,11 @@ def collect_live_metrics() -> Dict[str, Any]:
             "investor": owned_data.get("investor_name", "CHETAN SINGH THAKUR") if isinstance(owned_data, dict) else "CHETAN SINGH THAKUR",
             "count": len(owned_certs),
             "face": owned_face,
+            "live_face": owned_live_face,
+            "paid": owned_paid,
+            "surplus": owned_surplus,
+            "monthly_int": owned_monthly_int,
+            "be_mo": owned_be_mo,
             "actual": owned_actual,
             "acres": owned_acres,
             "by_county": owned_by_county,
@@ -241,7 +258,7 @@ def build_obsidian_canvas(m: Dict[str, Any]) -> Dict[str, Any]:
         "hub_core", -265, -160, 530, 220,
         f"# Real Estate Research Command Hub\n"
         f"**Last Synced:** `{m['now']}` *(Auto-Updated)*\n\n"
-        f"- **Owned Certificates (`{owned['tsb_number']}`):** **`{owned['count']}` confirmed CO liens** (`${owned['face']:,.2f}` base / `${owned['actual']:,.0f}` roll / `{owned['acres']:.1f} ac`)\n"
+        f"- **Owned Certificates (`{owned['tsb_number']}`):** **`{owned['count']}` confirmed CO liens** (`${owned['live_face']:,.2f}` face | `${owned['paid']:,.2f}` paid | `${owned['surplus']:,.2f}` surplus | `${owned['monthly_int']:,.2f}/mo`)\n"
         f"- **Wiki Knowledge Base:** `{m['wiki_count']}` synthesized notes | `{m['xlsx_count']}` workbooks | `{m['pdf_count']}` PDFs\n"
         f"- **Maryland OTC Portfolio:** `{m['md_total_unique']:,}` unique parcels across 7 active counties + Carroll FY26\n"
         f"- **Colorado 2026 Auctions:** `{co_tot}` enriched parcels (`{co_sub1k}` Sub-$1k Grade A/B flips)\n"
@@ -260,10 +277,10 @@ def build_obsidian_canvas(m: Dict[str, Any]) -> Dict[str, Any]:
         "port_summary", -285, -870, 570, 220,
         f"## Active Buyer Portfolio — `{owned['tsb_number']}`\n"
         f"- **Buyer:** `{owned['investor']}` (`zeusauction.com` / SRI)\n"
-        f"- **Confirmed Logged:** **`{owned['count']}` CO certificates** ({county_breakdown_str} | **13.0%** simple monthly)\n"
-        f"- **Totals:** `${owned['face']:,.2f}` export face | **`${owned['actual']:,.0f}` roll value** (`$913k+` deed comps) | **`{owned['acres']:.2f}` acres**\n"
-        f"- **Redemption / Deed Window:** 3-Yr Redemption -> **Nov 17–19, 2029** (`HB24-1056 / C.R.S. § 39-11.5` Option Auction)\n"
-        f"- **Status:** All 3 CO counties logged (Pending Exports: {pending_str})",
+        f"- **Confirmed Settled:** **`{owned['count']}` CO certificates** ({county_breakdown_str} | **13.0%** simple monthly = **`${owned['monthly_int']:,.2f}/mo`**)\n"
+        f"- **Settled Financials:** `${owned['live_face']:,.2f}` live face | **`${owned['paid']:,.2f}` paid** | **`${owned['surplus']:,.2f}` surplus** *(Blended BE: **Mo {owned['be_mo']}** | Gilpin+Conejos: **Mo 14**)*\n"
+        f"- **Collateral:** **`${owned['actual']:,.0f}` roll value** (`$913k+` comps) | **`{owned['acres']:.2f}` acres** | 3-Yr Redemption: **Nov 17–19, 2029**\n"
+        f"- **Status:** All 3 CO ZeusAuction Won Exports settled (Pending Exports: {pending_str})",
         "5",
     )
     add_text(
@@ -369,13 +386,14 @@ def build_obsidian_canvas(m: Dict[str, Any]) -> Dict[str, Any]:
     add_text(
         "reg_summary", -1215, 290, 410, 240,
         "## Multi-State Tax Sale & Land Corridors\n"
-        "- **Virginia (95 Counties / 38 Cities):** Judicial (`Va Code § 58.1-3965`) & Nonjudicial (`§ 58.1-3975`) Tax Deeds — **0 post-sale redemption**; Special Commissioner deeds.\n"
-        "- **Hampton Roads VA Land:** Chesapeake, Hampton, Yorktown, Poquoson perc/public utility infill lots (`$30k/$60k/$90k` buy boxes).\n"
-        "- **Delaware Monition Sales:** New Castle, Kent, Sussex sheriff sales (`1-yr` redemption @ **15% penalty**).\n"
+        "- **Illinois (31 Priority Counties, `/il`):** `22` Live ArcGIS/Socrata APIs (`Cook`, `DuPage`, `Lake`, `Kane`, `Peoria`, `Tazewell`, `St. Clair`...) + `9` DevNet/Assessor Portals (`35 ILCS 200`, `9%/6mo` = `18%/yr` max eff. 2024; `$0` premium; `ILTaxSale.com` Trustee OTC).\n"
+        "- **Virginia (95 Counties / 38 Cities):** Judicial (`Va Code § 58.1-3965`) & Nonjudicial (`§ 58.1-3975`) Tax Deeds — **0 post-sale redemption**.\n"
+        "- **Delaware Monition Sales:** New Castle, Kent, Sussex (`1-yr` redemption @ **15% penalty**).\n"
         "- **New Jersey Municipalities:** `564` towns (`0%` bid-down + premium, `2-yr` redemption).\n"
         "- **Indiana (Fulton County):** Nov 2026 Sheriff Sale routing integrated into parcel engine.",
         "6",
     )
+    add_file("reg_il_mkt", -1215, 775, 410, 85, "wiki/markets/Illinois Tax Lien Market - 31 Priority Counties.md", "6")
     add_file("reg_va_deed", -785, 290, 195, 90, "wiki/markets/Virginia Judicial Tax Deed and Independent Cities Market.md", "6")
     add_file("reg_de_deed", -580, 290, 195, 90, "wiki/markets/Delaware Monition and Tax Deed Market.md", "6")
     add_file("reg_nj_lien", -785, 395, 195, 90, "wiki/markets/New Jersey Municipal Tax Sale Market.md", "6")
@@ -412,14 +430,15 @@ def build_obsidian_canvas(m: Dict[str, Any]) -> Dict[str, Any]:
     add_text(
         "bot_arch", 385, 290, 420, 235,
         "## Live Platform (`@RealestateResearch_bot` & Web UI)\n"
-        "- **Web Dashboard:** `http://localhost:8080` (`app.py` + Render 24/7 keep-alive).\n"
-        "- **Telegram Commands:** `/tax`, `/parcel`, `/5k`, `/gilpin`, `/gradea`, `/deals [county]`, `/sync`, `/import`.\n"
-        "- **Multi-State Intelligence (`multi_state_parcel_engine.py`):**\n"
-        "  - Auto-routes `R0*`/`N0*`/`M0*` CO IDs -> Conejos (`TylerHost`), Gilpin (`InfoEnvoy`), Gunnison (`Spatialest`) instead of false MD SDAT fallbacks.\n"
-        "  - Emits direct **Assessor Card**, **Treasurer Account**, & **Google Maps GPS** links.\n"
-        "- **Continuous Sync:** `12h` county crawler (`otc_manager.py`) + `mindmap_sync.py` auto-refreshes this Canvas & Mermaid mindmaps on every ingestion!",
+        "- **Web Dashboard:** Render 24/7 + zero-login `/parcel?q=` (MD, IL, CO, IN) & `/api/il/counties`.\n"
+        "- **Telegram Commands:** `/il`, `/cook`, `/dupage`, `/lake` (all 31 IL counties), `/conejos`, `/gilpin`, `/gunnison`, `/tax`, `/parcel`, `/gradea`, `/deals`, `/sync`.\n"
+        "- **Multi-State Intelligence (`illinois_parcel_engine.py` + `multi_state_parcel_engine.py`):**\n"
+        "  - Auto-routes IL PINs (`10/11/12/14/15/16-digit`) -> `22` Live ArcGIS/Socrata APIs & `9` Portal Deep-Links.\n"
+        "  - Auto-routes `R0*`/`N0*`/`M0*` CO IDs -> Conejos (`TylerHost`), Gilpin (`InfoEnvoy`), Gunnison (`Spatialest`).\n"
+        "- **Continuous Sync:** `12h` MD crawler + `mindmap_sync.py` auto-refreshes Canvas & Mind Maps!",
         "1",
     )
+    add_file("bot_il", 385, 650, 420, 85, "illinois_parcel_engine.py", "1")
     add_file("bot_doc", 825, 290, 410, 110, "wiki/Synthesis - Maryland SDAT and Tax Lien Telegram Intelligence Bot.md", "1")
     add_file("bot_log", 825, 415, 410, 110, "log.md", "1")
     add_file("bot_app", 385, 550, 200, 85, "app.py", "1")
@@ -477,7 +496,7 @@ sources:
 mindmap
   root((Real Estate Research<br>{m['wiki_count']} Wiki Notes | {m['xlsx_count']} Workbooks))
     Owned Tax Lien Portfolio ({owned['tsb_number']})
-      Confirmed Totals ({owned['count']} Liens | ${owned['face']:,.2f} Face | ${owned['actual']:,.0f} Roll | {owned['acres']:.1f} Acres | 13% Rate)
+      Settled Totals ({owned['count']} Liens | ${owned['live_face']:,.2f} Face | ${owned['paid']:,.2f} Paid | ${owned['surplus']:,.2f} Surplus | Mo {owned['be_mo']} BE)
       Gunnison CO ({owned['by_county'].get('Gunnison, CO', 0)} Liens | Nov 17 2026)
         Grade A (R072243 35ac $320k comp | R075034 $123.6k)
         Grade B (R045340 $288k | R032979 247ac | R011326 144ac | R071511 95ac | R040051 35ac)
@@ -522,6 +541,11 @@ mindmap
       Conejos County ({con['total']} Parcels)
         {con['grades']['A']} Grade A | {con['grades']['B']} Grade B | {con['sub1k_ab']} Sub-$1k Flips
         TylerHost + SLVGIS Centroids | Reject 5170 Minerals
+    Illinois 31-County Tax Liens (35 ILCS 200)
+      2026 Penalty Cap 9% per 6-Mo / 18% yr Max (P.A. 103-0555; $0 Premium; 12% Sub-Tax)
+      22 Live Direct-API Counties (/cook, /dupage, /lake, /kane, /peoria, /tazewell, /stclair...)
+      9 Portal-Linked Counties (/champaign, /sangamon, /winnebago, /kankakee, /ogle, /knox...)
+      ILTaxSale.com Trustee OTC Program (Joseph E. Meyer ~94 IL Counties)
     Mid-Atlantic, Indiana & National
       Virginia Tax Deeds (0 Post-Sale Redemption)
         Va Code 58.1-3965 & 3975 (95 Counties / 38 Cities)
@@ -549,12 +573,13 @@ mindmap
 
 | Research Domain | Live Count / Status | Key Actionable Highlight | Primary Vault File / Workbook |
 | :--- | :--- | :--- | :--- |
-| **Owned Certificates (`{owned['tsb_number']}`)** | **`{owned['count']}`** confirmed *({', '.join(f'{cnt} {cname}' for cname, cnt in owned['by_county'].items())})* | `\\${owned['face']:,.2f}` base face / `\\${owned['actual']:,.0f}` roll / `{owned['acres']:.2f}` ac (`13%` yield; all 3 CO counties logged) | [[Portfolio - 2026 Tax Lien Certificates Owned]] |
+| **Owned Certificates (`{owned['tsb_number']}`)** | **`{owned['count']}`** settled *({', '.join(f'{cnt} {cname}' for cname, cnt in owned['by_county'].items())})* | `\\${owned['live_face']:,.2f}` live face / `\\${owned['paid']:,.2f}` paid / `\\${owned['surplus']:,.2f}` surplus (`\\${owned['monthly_int']:,.2f}/mo` @ `13%`; BE Mo `{owned['be_mo']}` all / Mo `14` Gilpin+Conejos) | [[Portfolio - 2026 Tax Lien Certificates Owned]] |
 | **Maryland OTC Master** | **`{m['md_total_unique']:,}`** unique parcels *(7 counties)* | `30` viable Anne Arundel Grade A deals (`taxsale@aacounty.org`) + `54` Kent OTC (`7` Tier-1) | [[Maryland Multi-County Tax Lien OTC Master Directory 2026]] / [`Anne_Arundel_County_MD_2026_Grade_A_OTC_Deals.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Anne_Arundel_County_MD_2026_Grade_A_OTC_Deals.xlsx) |
 | **Carroll County FY26** | **`3`** County-Held (`Bidder #1`) | **`04010914`** (8.95% LTV) & **`04015517`** (9.80% LTV) via `bgesell@carrollcountymd.gov` | [[Carroll County Land and Tax Sale Market]] / [`Carroll_FY26_Results.pdf`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Carroll_FY26_Results.pdf) |
 | **Gunnison County, CO** | **`{gun['total']}`** parcels *(`{gun['grades']['A']}` A, `{gun['grades']['B']}` B)* | `\\$5k` Budget Plan (5 lots, `\\$1.80M` value) + Ag ranch plays (`R072243`, `R071510`) | [[Gunnison County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] |
 | **Gilpin County, CO** | **`{gil['total']}`** parcels *(`{gil['grades']['A']}` A, `{gil['grades']['B']}` B)* | `15` Sub-`\\$1k` flips + InfoEnvoy Assessor & Treasurer links; `56` N-claims filtered | [[Gilpin County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] |
 | **Conejos County, CO** | **`{con['total']}`** parcels *(`{con['grades']['A']}` A, `{con['grades']['B']}` B)* | **`{con['sub1k_ab']}`** Sub-`\\$1k` Grade A/B deals + 40–80 ac tracts (`131` total CO sub-`\\$1k` Workbook) | [[Conejos County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] / [`Colorado_2026_Under_1000_Face_Grade_A_B_Flip_Deals.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Colorado_2026_Under_1000_Face_Grade_A_B_Flip_Deals.xlsx) |
+| **Illinois 31 Counties (`/il`)** | **`31`** counties *(`22` Live GIS/Socrata API + `9` Portal)* | Real-time Cook Socrata & 21 ArcGIS APIs + `35 ILCS 200` (`9%/6mo` max, `\\$0` premium, `ILTaxSale.com` OTC) | [[Illinois Tax Lien Market - 31 Priority Counties]] / [`illinois_parcel_engine.py`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/illinois_parcel_engine.py) |
 | **Mid-Atlantic Deeds** | **VA / DE / NJ / IN** | VA 0-redemption deeds + Hampton Roads Buy Box + Fulton IN Nov 2026 routing | [[Regional Mid-Atlantic Tax Sale Master Directory - MD VA NJ DE]] |
 | **Obsidian Canvas Board** | **Auto-Synced** | Interactive zoomable mindmap linking all notes, spreadsheets & contacts | [`Real Estate Research Mindmap.canvas`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/Real%20Estate%20Research%20Mindmap.canvas) |
 
