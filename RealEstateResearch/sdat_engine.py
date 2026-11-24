@@ -4,14 +4,59 @@ Queries the official Maryland Department of Planning / MD iMAP ArcGIS Cadastre S
 Covering all 24 Maryland counties & jurisdictions.
 """
 
+import os
 import requests
 import json
 import re
 import math
+import urllib.parse
 from typing import Dict, Any, Optional, List
 
 # Official Maryland Statewide Property Data MapServer
 MD_PROPERTY_DATA_URL = "https://mdgeodata.md.gov/imap/rest/services/PlanningCadastre/MD_PropertyData/MapServer/0/query"
+SDAT_PUBLIC_SEARCH_URL = "https://sdat.dat.maryland.gov/RealProperty/Pages/default.aspx"
+MD_FINDER_URL = "https://apps.planning.maryland.gov/finderonline/"
+MD_PLATS_URL = "https://plats.msa.maryland.gov/"
+
+
+def build_maryland_public_urls(acct_id: str = "", raw_sdat_url: str = "") -> Dict[str, str]:
+    """Return public, non-admin Maryland property & land-record URLs for a parcel."""
+    acct_clean = (acct_id or "").strip()
+    imap_card_url = ""
+    dossier_url = ""
+    base_public = (
+        os.environ.get("RENDER_EXTERNAL_URL")
+        or os.environ.get("PUBLIC_URL")
+        or "https://maryland-tax-lien-otc-platform.onrender.com"
+    ).strip().rstrip("/")
+    if acct_clean:
+        where_clause = urllib.parse.quote(f"ACCTID='{acct_clean}'", safe="")
+        imap_card_url = (
+            "https://mdgeodata.md.gov/imap/rest/services/PlanningCadastre/"
+            f"MD%5FPropertyData/MapServer/0/query?where={where_clause}&outFields=*&f=html"
+        )
+        dossier_url = f"{base_public}/parcel?q={urllib.parse.quote(acct_clean, safe='')}"
+
+    # Maryland iMAP SDATWEBADR fields frequently point to /RealPropertyAdmin/... which
+    # redirects users into a membership login wall; prefer direct public links instead.
+    raw_clean = (raw_sdat_url or "").strip()
+    is_admin_or_deep_login = any(
+        token in raw_clean.lower()
+        for token in ("realpropertyadmin", "membership/account/login", "view.aspx", "viewdetails.aspx")
+    )
+    safe_sdat_url = imap_card_url or SDAT_PUBLIC_SEARCH_URL
+    if raw_clean and not is_admin_or_deep_login:
+        safe_sdat_url = raw_clean
+
+    return {
+        "dossier_url": dossier_url or base_public,
+        "sdat_web_url": safe_sdat_url,
+        "imap_card_url": imap_card_url or SDAT_PUBLIC_SEARCH_URL,
+        "sdat_search_url": SDAT_PUBLIC_SEARCH_URL,
+        "finder_url": MD_FINDER_URL,
+        "plats_url": MD_PLATS_URL,
+        "mdlandrec_url": "https://landrec.msa.maryland.gov/",
+    }
 
 COUNTY_JURS_MAP = {
     "ALLEGANY": "ALLE",
@@ -288,7 +333,10 @@ def search_maryland_property(query: str, county: Optional[str] = None) -> List[D
                     "tract": attrs.get("CT2020"),
                     "block_group": attrs.get("BG2020")
                 },
-                "sdat_web_url": attrs.get("SDATWEBADR"),
+                "sdat_web_url": build_maryland_public_urls(attrs.get("ACCTID") or "", attrs.get("SDATWEBADR") or "")["sdat_web_url"],
+                "sdat_search_url": SDAT_PUBLIC_SEARCH_URL,
+                "finder_url": MD_FINDER_URL,
+                "plats_url": MD_PLATS_URL,
                 "google_maps_url": google_maps_url,
                 "coordinates": {
                     "lat": lat,

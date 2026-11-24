@@ -17,7 +17,7 @@
       "y": -160,
       "width": 530,
       "height": 220,
-      "text": "# Real Estate Research Command Hub\n**Last Synced:** `2026-11-15 11:33` *(Auto-Updated)*\n\n- **Wiki Knowledge Base:** `73` synthesized notes\n- **Master Excel/PDF Data:** `19` workbooks | `38` county PDFs\n- **Maryland OTC Portfolio:** `1,003` unique parcels across 7 active counties + Carroll FY26\n- **Colorado 2026 Auctions:** `473` enriched parcels (`131` Sub-$1k Grade A/B flips)\n- **Guardrails:** `$333`/deal MD starter | `$5,000` CO auction budget | `14%` CO / `10%-20%` MD yield",
+      "text": "# Real Estate Research Command Hub\n**Last Synced:** `2026-11-23 17:37` *(Auto-Updated)*\n\n- **Owned Certificates (`TSB1377784`):** **`16` confirmed CO liens** (`$3,237.50` base / `$688,849` roll / `578.4 ac`)\n- **Wiki Knowledge Base:** `74` synthesized notes | `19` workbooks | `40` PDFs\n- **Maryland OTC Portfolio:** `1,003` unique parcels across 7 active counties + Carroll FY26\n- **Colorado 2026 Auctions:** `473` enriched parcels (`131` Sub-$1k Grade A/B flips)\n- **Yield Targets:** `13%` CO (`C.R.S. \u00a7 39-12-103`) | `10%-20%` MD statutory yield",
       "color": "5"
     },
     {
@@ -38,6 +38,56 @@
       "y": 80,
       "width": 255,
       "height": 85,
+      "color": "5"
+    },
+    {
+      "id": "grp_port",
+      "type": "group",
+      "x": -310,
+      "y": -900,
+      "width": 620,
+      "height": 660,
+      "label": "OWNED TAX LIEN CERTIFICATES PORTFOLIO (TSB1377784)",
+      "color": "5"
+    },
+    {
+      "id": "port_summary",
+      "type": "text",
+      "x": -285,
+      "y": -870,
+      "width": 570,
+      "height": 220,
+      "text": "## Active Buyer Portfolio \u2014 `TSB1377784`\n- **Buyer:** `CHETAN SINGH THAKUR` (`zeusauction.com` / SRI)\n- **Confirmed Logged:** **`16` CO certificates** (9 Gunnison, CO + 2 Gilpin, CO + 5 Conejos, CO | **13.0%** simple monthly)\n- **Totals:** `$3,237.50` export face | **`$688,849` roll value** (`$913k+` deed comps) | **`578.39` acres**\n- **Redemption / Deed Window:** 3-Yr Redemption -> **Nov 17\u201319, 2029** (`HB24-1056 / C.R.S. \u00a7 39-11.5` Option Auction)\n- **Status:** All 3 CO counties logged (Pending Exports: None)",
+      "color": "5"
+    },
+    {
+      "id": "port_items",
+      "type": "text",
+      "x": -285,
+      "y": -630,
+      "width": 570,
+      "height": 180,
+      "text": "## Confirmed Parcels (`16` Total: 15 Fee-Simple + 1 Mineral Note)\n- **Gunnison (`9`):** `R072243` (35 ac, $320k) | `R075034` ($123.6k) | `R045340` ($288k) | `R032979` (247 ac) | `R011326` (144 ac) | `R071511` (95 ac) | `R040051` (35 ac) | `R016646`/`R016647` ($55k comps)\n- **Gilpin (`2`):** `R000476` ($117.44 / $38.9k Res+Imps) | `R006904` ($307.64 / $50.6k roll, $270k comp)\n- **Conejos (`5`):** `R002430` (Grade A, $76.6k) | `R017408` (7.3 ac, $24.2k) | `R002185` ($15k) | `R007133` (4.2 ac) | `R017432` *(passive mineral hold)*",
+      "color": "5"
+    },
+    {
+      "id": "port_contacts",
+      "type": "text",
+      "x": -285,
+      "y": -430,
+      "width": 340,
+      "height": 165,
+      "text": "## Servicing & Settlement Desks\n- **SRI / Zeus:** `1-800-800-9588` | `support@zeusauction.com`\n- **Gunnison:** `(970) 641-2231` | `treasurerdl@gunnisoncounty.org`\n- **Gilpin:** `(303) 582-5222` | `mlorenz@gilpincounty.org`\n- **Conejos:** `(719) 376-5919` | `mack@co.conejos.co.us`",
+      "color": "5"
+    },
+    {
+      "id": "port_file_md",
+      "type": "file",
+      "file": "wiki/synthesis/Portfolio - 2026 Tax Lien Certificates Owned.md",
+      "x": 70,
+      "y": -430,
+      "width": 215,
+      "height": 165,
       "color": "5"
     },
     {
@@ -592,6 +642,15 @@
     }
   ],
   "edges": [
+    {
+      "id": "e_hub_port",
+      "fromNode": "hub_core",
+      "fromSide": "top",
+      "toNode": "port_contacts",
+      "toSide": "bottom",
+      "label": "Owned (TSB1377784)",
+      "color": "5"
+    },
     {
       "id": "e_hub_md",
       "fromNode": "hub_core",

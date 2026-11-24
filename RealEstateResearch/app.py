@@ -8,6 +8,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import json
+import html
 import time
 import base64
 import urllib.parse
@@ -726,6 +727,38 @@ class LivePlatformHandler(BaseHTTPRequestHandler):
                 self._send_json({"error": "CSV file not found"}, 404)
             return
 
+        if path == "/parcel":
+            qs = urllib.parse.parse_qs(parsed.query)
+            q = (qs.get("q") or [""])[0].strip()
+            if not q:
+                self._send_json({"error": "Missing query parameter q"}, 400)
+                return
+            props = search_maryland_property(q)
+            if not props:
+                not_found_html = (
+                    "<!doctype html><html><head><meta charset='utf-8'>"
+                    "<meta name='viewport' content='width=device-width,initial-scale=1'>"
+                    "<title>Parcel Not Found</title></head><body style='font-family:system-ui;padding:24px;background:#0f172a;color:#e2e8f0'>"
+                    f"<h2>Parcel Not Found: {html.escape(q)}</h2>"
+                    "<p><a href='/' style='color:#38bdf8'>Back to Dashboard</a></p></body></html>"
+                ).encode("utf-8")
+                self.send_response(404)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(not_found_html)))
+                self.end_headers()
+                self.wfile.write(not_found_html)
+                return
+            prop = props[0]
+            tax_res = inspect_property_tax_status(prop)
+            title_res = analyze_maryland_title(prop, tax_res)
+            body = render_parcel_dossier_html(prop, tax_res, title_res).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
         if path == "/api/lookup":
             qs = urllib.parse.parse_qs(parsed.query)
             q = (qs.get("q") or [""])[0].strip()
@@ -777,6 +810,144 @@ class LivePlatformHandler(BaseHTTPRequestHandler):
             return
 
         self._send_json({"error": "Not found"}, 404)
+
+
+def _fmt_money(val) -> str:
+    if isinstance(val, (int, float)) and val > 0:
+        return f"${val:,.0f}"
+    return "N/A"
+
+
+def render_parcel_dossier_html(prop: dict, tax_res: dict, title_res: dict) -> str:
+    """Render a mobile-friendly zero-login Maryland property & title dossier page."""
+    esc = html.escape
+    acct = str(prop.get("account_id") or "N/A")
+    addr = str(prop.get("address") or "Unknown Address")
+    city = str(prop.get("city") or "")
+    zipcode = str(prop.get("zipcode") or "")
+    jurs = str(prop.get("jurisdiction") or "")
+
+    val = prop.get("valuation", {})
+    dims = prop.get("dimensions", {})
+    legal = prop.get("legal", {})
+    zoning = prop.get("zoning", {})
+    owner_mail = prop.get("owner_mailing", {})
+    struct = prop.get("structure", {})
+    curr = title_res.get("current_deed", {})
+    prior = title_res.get("prior_deed", {})
+    plat = title_res.get("plat", {})
+    c_meta = title_res.get("county_meta", {})
+    links = title_res.get("links", {})
+
+    in_tax = bool(tax_res.get("in_tax_sale"))
+    if in_tax:
+        lien_due = tax_res.get("total_lien_due")
+        lien_fmt = f"${lien_due:,.2f}" if isinstance(lien_due, (int, float)) else "N/A"
+        tax_badge = (
+            f"<div style='background:#7f1d1d;border:1px solid #ef4444;padding:12px;border-radius:10px;margin:14px 0'>"
+            f"<strong>ACTIVE OTC TAX LIEN</strong> — List #{esc(str(tax_res.get('list_no', 'N/A')))} | "
+            f"Due: <strong>{esc(lien_fmt)}</strong> | LTV: <strong>{esc(str(tax_res.get('ltv_pct', 'N/A')))}%</strong> "
+            f"({esc(str(tax_res.get('county_name', c_meta.get('name', 'Maryland'))))})</div>"
+        )
+    else:
+        tax_badge = (
+            "<div style='background:#064e3b;border:1px solid #10b981;padding:12px;border-radius:10px;margin:14px 0'>"
+            "<strong>TAX STATUS:</strong> In Good Standing / Taxes Current (not in active OTC tax sale list)</div>"
+        )
+
+    pos_items = "".join(f"<li>✅ {esc(str(x))}</li>" for x in title_res.get("positive_factors", []))
+    risk_items = "".join(f"<li>⚠️ {esc(str(x))}</li>" for x in title_res.get("risk_factors", []))
+    cont_items = "".join(f"<li>{esc(str(x))}</li>" for x in title_res.get("recommended_contingencies", []))
+
+    owner_addr = ", ".join(
+        p for p in [
+            owner_mail.get("line1"),
+            owner_mail.get("line2"),
+            owner_mail.get("city"),
+            owner_mail.get("state"),
+            owner_mail.get("zip"),
+        ] if p
+    ) or "N/A"
+    legal_line = " | ".join(p for p in [legal.get("legal1"), legal.get("legal2"), legal.get("legal3")] if p) or "N/A"
+    gmaps = prop.get("google_maps_url") or ""
+    gmaps_btn = (
+        f"<a class='btn' href='{esc(gmaps)}' target='_blank' rel='noopener'>Google Maps</a>"
+        if gmaps else ""
+    )
+
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{esc(addr)} ({esc(acct)}) — Parcel Dossier</title>
+<style>
+  body{{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:16px;line-height:1.5}}
+  .wrap{{max-width:860px;margin:0 auto}}
+  .card{{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:18px;margin-bottom:16px}}
+  h1,h2,h3{{margin:0 0 10px 0;color:#f8fafc}}
+  h1{{font-size:1.35rem}} h2{{font-size:1.05rem;color:#38bdf8;border-bottom:1px solid #334155;padding-bottom:6px}}
+  .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}}
+  .kv{{background:#0f172a;padding:10px;border-radius:8px;border:1px solid #334155}}
+  .k{{font-size:.75rem;color:#94a3b8;text-transform:uppercase}} .v{{font-size:.98rem;font-weight:600;color:#f8fafc;word-break:break-word}}
+  .btn{{display:inline-block;background:#0284c7;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:.86rem;font-weight:600;margin:4px 6px 4px 0}}
+  .btn.sec{{background:#334155}}
+  ul,ol{{margin:6px 0 0 18px;padding:0}} li{{margin-bottom:5px}}
+  code{{background:#0f172a;padding:2px 6px;border-radius:4px;color:#7dd3fc}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div style="font-size:.82rem;color:#94a3b8">Maryland Open Cadastre + Title Dossier (No Login Required)</div>
+    <h1>{esc(addr)}{(', ' + esc(city)) if city else ''} {esc(zipcode)}</h1>
+    <div>Account ID: <code>{esc(acct)}</code> | Jurisdiction: <code>{esc(jurs)}</code> ({esc(str(c_meta.get('name', '')))}) | Title Score: <strong>{esc(str(title_res.get('badge', '')))} {esc(str(title_res.get('score', 'N/A')))}/100 (Grade {esc(str(title_res.get('grade', 'N/A')))})</strong></div>
+    {tax_badge}
+    <div>
+      <a class="btn" href="{esc(links.get('sdat_url', '#'))}" target="_blank" rel="noopener">Raw MD iMAP/SDAT Record (No Login)</a>
+      {gmaps_btn}
+      <a class="btn sec" href="{esc(links.get('plats_url', 'https://plats.msa.maryland.gov/'))}" target="_blank" rel="noopener">MD Survey Plats (No Login)</a>
+      <a class="btn sec" href="{esc(links.get('sdat_search_url', 'https://sdat.dat.maryland.gov/RealProperty/Pages/default.aspx'))}" target="_blank" rel="noopener">SDAT Public Search</a>
+      <a class="btn sec" href="{esc(links.get('judiciary_url', 'https://casesearch.courts.state.md.us/casesearch/processDisclaimer.jis'))}" target="_blank" rel="noopener">MD Judiciary Case Search</a>
+      <a class="btn sec" href="{esc(links.get('mdlandrec_url', 'https://landrec.msa.maryland.gov/'))}" target="_blank" rel="noopener">MDLandRec (Free Login Req.)</a>
+      <a class="btn sec" href="/">Dashboard Home</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Valuation &amp; Property Details</h2>
+    <div class="grid">
+      <div class="kv"><div class="k">Total Assessed Value</div><div class="v">{esc(_fmt_money(val.get('total_value')))}</div></div>
+      <div class="kv"><div class="k">Land / Improvement</div><div class="v">{esc(_fmt_money(val.get('land_value')))} / {esc(_fmt_money(val.get('improvement_value')))}</div></div>
+      <div class="kv"><div class="k">Acreage / Sq Ft</div><div class="v">{esc(str(dims.get('acres') or 'N/A'))} ac / {esc(str(dims.get('sqft') or 'N/A'))} sq ft</div></div>
+      <div class="kv"><div class="k">Zoning &amp; Land Use</div><div class="v">{esc(str(zoning.get('code') or 'N/A'))} — {esc(str(zoning.get('land_use_desc') or zoning.get('land_use') or 'N/A'))}</div></div>
+      <div class="kv"><div class="k">Year Built / Structure</div><div class="v">{esc(str(struct.get('year_built') or 'N/A'))} | {esc(str(struct.get('structure_sqft') or 'N/A'))} sq ft</div></div>
+      <div class="kv"><div class="k">Style / Construction</div><div class="v">{esc(str(struct.get('style') or 'N/A'))} | {esc(str(struct.get('construction') or 'N/A'))}</div></div>
+    </div>
+    <p style="margin:12px 0 0 0"><strong>Owner Mailing:</strong> {esc(owner_addr)} {'(Absentee Owner)' if owner_mail.get('is_absentee') else '(Owner-Occupied / Local)'}</p>
+    <p style="margin:6px 0 0 0"><strong>Legal Description:</strong> {esc(legal_line)}</p>
+    <p style="margin:6px 0 0 0"><strong>Plat / Map Reference:</strong> Subdiv <code>{esc(str(plat.get('subdivision') or 'N/A'))}</code> | Lot <code>{esc(str(plat.get('lot') or 'N/A'))}</code> | Sec <code>{esc(str(plat.get('section') or 'N/A'))}</code> | Map <code>{esc(str(plat.get('map') or 'N/A'))}</code> | Grid <code>{esc(str(plat.get('grid') or 'N/A'))}</code> | Parcel <code>{esc(str(plat.get('parcel') or 'N/A'))}</code></p>
+  </div>
+
+  <div class="card">
+    <h2>Chain of Title &amp; MDLandRec Lookup Coordinates</h2>
+    <div class="grid">
+      <div class="kv"><div class="k">Current Deed (Liber / Folio)</div><div class="v">{esc(str(curr.get('liber') or 'N/A'))} / {esc(str(curr.get('folio') or 'N/A'))}</div></div>
+      <div class="kv"><div class="k">Transfer Date / Price</div><div class="v">{esc(str(curr.get('transfer_date') or 'N/A'))} | {esc(str(curr.get('consideration_str') or 'N/A'))}</div></div>
+      <div class="kv"><div class="k">Prior Deed (Liber / Folio)</div><div class="v">{esc(str(prior.get('liber') or 'N/A'))} / {esc(str(prior.get('folio') or 'N/A'))}</div></div>
+      <div class="kv"><div class="k">Owner / Entity Type</div><div class="v">{esc(str(title_res.get('owner_of_record') or 'N/A'))} ({esc(str(title_res.get('entity_type') or 'N/A'))})</div></div>
+    </div>
+    <p style="margin:10px 0 0 0;color:#94a3b8;font-size:.88rem">To inspect the scanned deed PDF on MDLandRec (free MSA login required): select <strong>{esc(str(c_meta.get('name', 'County')))} (Code {esc(str(c_meta.get('code', 'N/A')))})</strong>, Book/Liber <code>{esc(str(curr.get('liber') or 'N/A'))}</code>, Page/Folio <code>{esc(str(curr.get('folio') or 'N/A'))}</code>.</p>
+    <ul>{pos_items}{risk_items}</ul>
+  </div>
+
+  <div class="card">
+    <h2>Recommended Closing Contingencies</h2>
+    <ol>{cont_items}</ol>
+  </div>
+</div>
+</body>
+</html>"""
 
 
 KEEPALIVE_INTERVAL_SEC = int(os.environ.get("KEEPALIVE_INTERVAL_SEC", "240"))

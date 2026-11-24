@@ -118,7 +118,21 @@ def collect_live_metrics() -> Dict[str, Any]:
     gunnison_face = float(gunnison_data.get("total_face_amount") or sum(float(r.get("face_amount") or 0) for r in gunnison_rows))
     gunnison_actual = float(gunnison_data.get("total_actual_value") or sum(float(r.get("total_actual_value") or 0) for r in gunnison_rows))
 
-    # 3. Vault File Inventory
+    # 3. Owned Tax Lien Certificates Portfolio
+    owned_data = _load_json(SCRATCH_DIR / "owned_certificates_portfolio.json", {})
+    owned_certs = owned_data.get("certificates", []) if isinstance(owned_data, dict) else []
+    owned_by_county: Dict[str, int] = {}
+    owned_face = 0.0
+    owned_actual = 0.0
+    owned_acres = 0.0
+    for c in owned_certs:
+        cname = f"{c.get('county', 'Unknown')}, {c.get('state', '')}".strip(", ")
+        owned_by_county[cname] = owned_by_county.get(cname, 0) + 1
+        owned_face += float(c.get("export_face_amount") or 0)
+        owned_actual += float(c.get("total_actual_value") or 0)
+        owned_acres += float(c.get("acres") or 0)
+
+    # 4. Vault File Inventory
     wiki_files = list(WIKI_DIR.rglob("*.md")) if WIKI_DIR.exists() else []
     xlsx_files = sorted([p.name for p in RAW_DIR.glob("*.xlsx")]) if RAW_DIR.exists() else []
     pdf_files = sorted([p.name for p in RAW_DIR.glob("*.pdf")]) if RAW_DIR.exists() else []
@@ -157,6 +171,21 @@ def collect_live_metrics() -> Dict[str, Any]:
         },
         "co_total_parcels": len(conejos_rows) + len(gilpin_rows) + len(gunnison_rows),
         "co_sub1k_ab_total": conejos_sub1k_ab + gilpin_sub1k_ab + gunnison_sub1k_ab,
+        "owned": {
+            "tsb_number": owned_data.get("tsb_number", "TSB1377784") if isinstance(owned_data, dict) else "TSB1377784",
+            "investor": owned_data.get("investor_name", "CHETAN SINGH THAKUR") if isinstance(owned_data, dict) else "CHETAN SINGH THAKUR",
+            "count": len(owned_certs),
+            "face": owned_face,
+            "actual": owned_actual,
+            "acres": owned_acres,
+            "by_county": owned_by_county,
+            "parcel_ids": [str(c.get("parcel_number", "")) for c in owned_certs if c.get("parcel_number")],
+            "pending_counties": [
+                str(p.get("county", ""))
+                for p in (owned_data.get("pending_counties", []) if isinstance(owned_data, dict) else [])
+                if p.get("county")
+            ],
+        },
         "wiki_count": len(wiki_files),
         "xlsx_count": len(xlsx_files),
         "pdf_count": len(pdf_files),
@@ -205,21 +234,56 @@ def build_obsidian_canvas(m: Dict[str, Any]) -> Dict[str, Any]:
     co_tot = m["co_total_parcels"]
     co_sub1k = m["co_sub1k_ab_total"]
 
+    owned = m["owned"]
     # ==================== CENTRAL HUB ====================
     add_group("grp_hub", -290, -190, 580, 380, "REAL ESTATE RESEARCH MASTER HUB", "5")
     add_text(
         "hub_core", -265, -160, 530, 220,
         f"# Real Estate Research Command Hub\n"
         f"**Last Synced:** `{m['now']}` *(Auto-Updated)*\n\n"
-        f"- **Wiki Knowledge Base:** `{m['wiki_count']}` synthesized notes\n"
-        f"- **Master Excel/PDF Data:** `{m['xlsx_count']}` workbooks | `{m['pdf_count']}` county PDFs\n"
+        f"- **Owned Certificates (`{owned['tsb_number']}`):** **`{owned['count']}` confirmed CO liens** (`${owned['face']:,.2f}` base / `${owned['actual']:,.0f}` roll / `{owned['acres']:.1f} ac`)\n"
+        f"- **Wiki Knowledge Base:** `{m['wiki_count']}` synthesized notes | `{m['xlsx_count']}` workbooks | `{m['pdf_count']}` PDFs\n"
         f"- **Maryland OTC Portfolio:** `{m['md_total_unique']:,}` unique parcels across 7 active counties + Carroll FY26\n"
         f"- **Colorado 2026 Auctions:** `{co_tot}` enriched parcels (`{co_sub1k}` Sub-$1k Grade A/B flips)\n"
-        f"- **Guardrails:** `$333`/deal MD starter | `$5,000` CO auction budget | `14%` CO / `10%-20%` MD yield",
+        f"- **Yield Targets:** `13%` CO (`C.R.S. § 39-12-103`) | `10%-20%` MD statutory yield",
         "5",
     )
     add_file("hub_index", -265, 80, 255, 85, "index.md", "5")
     add_file("hub_master_md", 10, 80, 255, 85, "wiki/synthesis/Real Estate Research Master Mind Map.md", "5")
+
+    # ==================== BRANCH 6 (TOP-CENTER): OWNED CERTIFICATES PORTFOLIO ====================
+    owned_ids_str = ", ".join(f"`{pid}`" for pid in owned["parcel_ids"])
+    pending_str = ", ".join(owned["pending_counties"]) if owned["pending_counties"] else "None"
+    county_breakdown_str = " + ".join(f"{cnt} {cname}" for cname, cnt in owned["by_county"].items()) or "0"
+    add_group("grp_port", -310, -900, 620, 660, f"OWNED TAX LIEN CERTIFICATES PORTFOLIO ({owned['tsb_number']})", "5")
+    add_text(
+        "port_summary", -285, -870, 570, 220,
+        f"## Active Buyer Portfolio — `{owned['tsb_number']}`\n"
+        f"- **Buyer:** `{owned['investor']}` (`zeusauction.com` / SRI)\n"
+        f"- **Confirmed Logged:** **`{owned['count']}` CO certificates** ({county_breakdown_str} | **13.0%** simple monthly)\n"
+        f"- **Totals:** `${owned['face']:,.2f}` export face | **`${owned['actual']:,.0f}` roll value** (`$913k+` deed comps) | **`{owned['acres']:.2f}` acres**\n"
+        f"- **Redemption / Deed Window:** 3-Yr Redemption -> **Nov 17–19, 2029** (`HB24-1056 / C.R.S. § 39-11.5` Option Auction)\n"
+        f"- **Status:** All 3 CO counties logged (Pending Exports: {pending_str})",
+        "5",
+    )
+    add_text(
+        "port_items", -285, -630, 570, 180,
+        f"## Confirmed Parcels (`{owned['count']}` Total: 15 Fee-Simple + 1 Mineral Note)\n"
+        f"- **Gunnison (`{owned['by_county'].get('Gunnison, CO', 0)}`):** `R072243` (35 ac, $320k) | `R075034` ($123.6k) | `R045340` ($288k) | `R032979` (247 ac) | `R011326` (144 ac) | `R071511` (95 ac) | `R040051` (35 ac) | `R016646`/`R016647` ($55k comps)\n"
+        f"- **Gilpin (`{owned['by_county'].get('Gilpin, CO', 0)}`):** `R000476` ($117.44 / $38.9k Res+Imps) | `R006904` ($307.64 / $50.6k roll, $270k comp)\n"
+        f"- **Conejos (`{owned['by_county'].get('Conejos, CO', 0)}`):** `R002430` (Grade A, $76.6k) | `R017408` (7.3 ac, $24.2k) | `R002185` ($15k) | `R007133` (4.2 ac) | `R017432` *(passive mineral hold)*",
+        "5",
+    )
+    add_text(
+        "port_contacts", -285, -430, 340, 165,
+        "## Servicing & Settlement Desks\n"
+        "- **SRI / Zeus:** `1-800-800-9588` | `support@zeusauction.com`\n"
+        "- **Gunnison:** `(970) 641-2231` | `treasurerdl@gunnisoncounty.org`\n"
+        "- **Gilpin:** `(303) 582-5222` | `mlorenz@gilpincounty.org`\n"
+        "- **Conejos:** `(719) 376-5919` | `mack@co.conejos.co.us`",
+        "5",
+    )
+    add_file("port_file_md", 70, -430, 215, 165, "wiki/synthesis/Portfolio - 2026 Tax Lien Certificates Owned.md", "5")
 
     # ==================== BRANCH 1 (TOP-LEFT): MARYLAND OTC & COUNTY LIENS ====================
     add_group("grp_md", -1240, -900, 880, 740, "MARYLAND 24-COUNTY TAX LIENS & LIVE OTC", "2")
@@ -367,6 +431,7 @@ def build_obsidian_canvas(m: Dict[str, Any]) -> Dict[str, Any]:
     add_file("bot_claude", 965, 665, 270, 85, "CLAUDE.md", "1")
 
     # ==================== EDGES ====================
+    add_edge("e_hub_port", "hub_core", "top", "port_contacts", "bottom", f"Owned ({owned['tsb_number']})", "5")
     add_edge("e_hub_md", "hub_core", "left", "md_aa_picks", "right", "Maryland OTC", "2")
     add_edge("e_hub_co", "hub_core", "right", "co_summary", "left", "Colorado 2026", "4")
     add_edge("e_hub_reg", "hub_core", "bottom", "reg_summary", "top", "VA / DE / NJ / IN", "6")
@@ -383,14 +448,16 @@ def build_master_mindmap_md(m: Dict[str, Any]) -> str:
     con = m["conejos"]
     gil = m["gilpin"]
     gun = m["gunnison"]
+    owned = m["owned"]
 
     return f"""---
 category: synthesis
-tags: [mind-map, obsidian-canvas, multi-state, maryland, colorado, virginia, delaware, new-jersey, indiana, tax-liens, otc-tax-liens, automation]
+tags: [mind-map, obsidian-canvas, multi-state, maryland, colorado, virginia, delaware, new-jersey, indiana, tax-liens, otc-tax-liens, portfolio, automation]
 created: 2026-11-15
 updated: {m['today']}
 sources:
   - "[Real Estate Research Index](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/index.md)"
+  - "[Portfolio - 2026 Tax Lien Certificates Owned](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/synthesis/Portfolio%20-%202026%20Tax%20Lien%20Certificates%20Owned.md)"
   - "[Maryland Multi-County Tax Lien OTC Master Directory 2026](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/wiki/synthesis/Maryland%20Multi-County%20Tax%20Lien%20OTC%20Master%20Directory%202026.md)"
   - "[Colorado Sub-$1,000 Grade A/B Flip Deals Workbook](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Colorado_2026_Under_1000_Face_Grade_A_B_Flip_Deals.xlsx)"
   - "[Anne Arundel County Grade A OTC Deals Workbook](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Anne_Arundel_County_MD_2026_Grade_A_OTC_Deals.xlsx)"
@@ -409,6 +476,21 @@ sources:
 ```mermaid
 mindmap
   root((Real Estate Research<br>{m['wiki_count']} Wiki Notes | {m['xlsx_count']} Workbooks))
+    Owned Tax Lien Portfolio ({owned['tsb_number']})
+      Confirmed Totals ({owned['count']} Liens | ${owned['face']:,.2f} Face | ${owned['actual']:,.0f} Roll | {owned['acres']:.1f} Acres | 13% Rate)
+      Gunnison CO ({owned['by_county'].get('Gunnison, CO', 0)} Liens | Nov 17 2026)
+        Grade A (R072243 35ac $320k comp | R075034 $123.6k)
+        Grade B (R045340 $288k | R032979 247ac | R011326 144ac | R071511 95ac | R040051 35ac)
+        Grade C (R016646 & R016647 Blue Mesa $55k comps)
+      Gilpin CO ({owned['by_county'].get('Gilpin, CO', 0)} Liens | Nov 19 2026)
+        Grade B (R006904 $307.64 | $50.6k roll / $270k comp)
+        Grade C (R000476 $117.44 | $38.9k 2676 Apex Valley Rd)
+      Conejos CO ({owned['by_county'].get('Conejos, CO', 0)} Liens | Nov 19 2026)
+        Grade A (R002430 $170.96 | $76.6k 406 Broadway La Jara)
+        Grade B (R017408 7.3ac $24.2k | R002185 $15k La Jara)
+        Grade C/D (R007133 4.2ac | R017432 $74.60 Passive Mineral Hold)
+      3-Yr Redemption Nov 17-19 2029 (HB24-1056 Option Auction)
+      Servicing (SRI 800-800-9588 | Gunnison 970-641-2231 | Gilpin 303-582-5222 | Conejos 719-376-5919)
     Maryland Tax Liens & OTC
       Live Inventory ({m['md_total_unique']:,} Unique Parcels)
         Cecil County ({md_c.get('Cecil County', 587)})
@@ -467,6 +549,7 @@ mindmap
 
 | Research Domain | Live Count / Status | Key Actionable Highlight | Primary Vault File / Workbook |
 | :--- | :--- | :--- | :--- |
+| **Owned Certificates (`{owned['tsb_number']}`)** | **`{owned['count']}`** confirmed *({', '.join(f'{cnt} {cname}' for cname, cnt in owned['by_county'].items())})* | `\\${owned['face']:,.2f}` base face / `\\${owned['actual']:,.0f}` roll / `{owned['acres']:.2f}` ac (`13%` yield; all 3 CO counties logged) | [[Portfolio - 2026 Tax Lien Certificates Owned]] |
 | **Maryland OTC Master** | **`{m['md_total_unique']:,}`** unique parcels *(7 counties)* | `30` viable Anne Arundel Grade A deals (`taxsale@aacounty.org`) + `54` Kent OTC (`7` Tier-1) | [[Maryland Multi-County Tax Lien OTC Master Directory 2026]] / [`Anne_Arundel_County_MD_2026_Grade_A_OTC_Deals.xlsx`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Anne_Arundel_County_MD_2026_Grade_A_OTC_Deals.xlsx) |
 | **Carroll County FY26** | **`3`** County-Held (`Bidder #1`) | **`04010914`** (8.95% LTV) & **`04015517`** (9.80% LTV) via `bgesell@carrollcountymd.gov` | [[Carroll County Land and Tax Sale Market]] / [`Carroll_FY26_Results.pdf`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/raw/Carroll_FY26_Results.pdf) |
 | **Gunnison County, CO** | **`{gun['total']}`** parcels *(`{gun['grades']['A']}` A, `{gun['grades']['B']}` B)* | `\\$5k` Budget Plan (5 lots, `\\$1.80M` value) + Ag ranch plays (`R072243`, `R071510`) | [[Gunnison County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] |
@@ -479,6 +562,7 @@ mindmap
 
 ## 🔗 Quick Navigation Across Core Research Branches
 * **Interactive Visual Board**: [`Real Estate Research Mindmap.canvas`](file:///c:/Obsedian/RealEstateResearch/RealEstateResearch/Real%20Estate%20Research%20Mindmap.canvas)
+* **Owned Certificate Portfolio**: [[Portfolio - 2026 Tax Lien Certificates Owned]] (`TSB1377784`)
 * **Maryland Sector Deep Dive**: [[Maryland Mind Map]] | [[Maryland Tax Lien OTC and Surplus Directory - 24 Jurisdictions]] | [[Deal Analysis - Anne Arundel County Tax Liens 2026]] | [[Deal Analysis - Kent County Tax Liens 2026]] | [[Carroll County Land and Tax Sale Market]]
 * **Colorado 2026 Matrices**: [[Conejos County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] | [[Gilpin County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] | [[Gunnison County Colorado 2026 Tax Lien Sale - Underwriting Matrix]]
 * **Regional & Strategy**: [[Regional Mid-Atlantic Tax Sale Master Directory - MD VA NJ DE]] | [[Over-The-Counter Tax Lien Sourcing Portals and Direct Links]] | [[Property Due Diligence Funnel]] | [[Seller Financing and Land Contracts]] | [[Buy Box - Hampton Roads Infill Land and Lots]]

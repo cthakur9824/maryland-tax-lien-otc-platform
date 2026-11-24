@@ -307,10 +307,16 @@ def format_property_card(prop: dict, tax_info: dict) -> str:
         msg += f"• *Jurisdiction:* **{county_name}** (`{jurs_code}`) — 6-Month Statutory Redemption Window\n"
         msg += f"• _Note: Property is an off-market private parcel (not in county tax default)._\n\n"
 
-    msg += f"🔗 [Official SDAT Card]({prop.get('sdat_web_url', '')})"
+    dossier_url = title_res["links"].get("dossier_url", "")
+    sdat_card_url = prop.get("sdat_web_url") or title_res["links"]["sdat_url"]
+    sdat_search_url = prop.get("sdat_search_url") or title_res["links"].get("sdat_search_url") or "https://sdat.dat.maryland.gov/RealProperty/Pages/default.aspx"
+    plats_url = prop.get("plats_url") or title_res["links"].get("plats_url") or "https://plats.msa.maryland.gov/"
+    if dossier_url:
+        msg += f"📄 [Live Parcel & Title Dossier (No Login)]({dossier_url})\n"
+    msg += f"🔗 [MD Parcel Record]({sdat_card_url}) | 🔍 [SDAT Public Search]({sdat_search_url})"
     if gmaps_url:
-        msg += f" | 📍 [Open in Google Maps]({gmaps_url})"
-    msg += f" | 📜 [MDLandRec]({title_res['links']['mdlandrec_url']})"
+        msg += f" | 📍 [Google Maps]({gmaps_url})"
+    msg += f"\n🗺 [MD Plats (No Login)]({plats_url}) | 📜 [MDLandRec (Free Login Req.)]({title_res['links']['mdlandrec_url']})"
     msg += f"\n━━━━━━━━━━━━━━━━━━━━━\n"
     msg += f"💡 _Commands: `/title {acct}` | `/tax {acct}` | `/offer {acct}` | `/save {acct}`_"
 

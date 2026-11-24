@@ -193,8 +193,14 @@ def analyze_maryland_title(prop: Dict[str, Any], tax_info: Dict[str, Any] = None
         badge = "🔴"
 
     # ==================== GENERATE VERIFICATION URLS ====================
-    # 1. MDLandRec.net Reference
-    mdlandrec_url = "https://mdlandrec.net/"
+    from sdat_engine import build_maryland_public_urls
+    pub_urls = build_maryland_public_urls(
+        acct_id=prop.get("account_id") or "",
+        raw_sdat_url=prop.get("sdat_web_url") or "",
+    )
+
+    # 1. MDLandRec.net Reference (Maryland State Archives requires free login for deed images)
+    mdlandrec_url = pub_urls["mdlandrec_url"]
     mdlandrec_query_note = f"County: {county_meta['name']} (Code {county_meta['code']}) | Book: {curr_liber} | Page: {curr_folio}"
     
     # 2. Maryland Judiciary Case Search URL
@@ -202,8 +208,10 @@ def analyze_maryland_title(prop: Dict[str, Any], tax_info: Dict[str, Any] = None
     encoded_owner = urllib.parse.quote(owner_name)
     judiciary_search_url = f"https://casesearch.courts.state.md.us/casesearch/processDisclaimer.jis"
     
-    # 3. SDAT Official Record URL
-    sdat_url = prop.get("sdat_web_url") or f"https://sdat.dat.maryland.gov/RealProperty/Pages/default.aspx"
+    # 3. Public non-admin SDAT / iMAP & Plats URLs
+    sdat_url = pub_urls["sdat_web_url"]
+    sdat_search_url = pub_urls["sdat_search_url"]
+    plats_url = pub_urls["plats_url"]
 
     # Required Contract Title Contingencies
     recommended_contingencies = [
@@ -249,10 +257,13 @@ def analyze_maryland_title(prop: Dict[str, Any], tax_info: Dict[str, Any] = None
         "recommended_contingencies": recommended_contingencies,
         "county_meta": county_meta,
         "links": {
+            "dossier_url": pub_urls["dossier_url"],
             "mdlandrec_url": mdlandrec_url,
             "mdlandrec_note": mdlandrec_query_note,
             "judiciary_url": judiciary_search_url,
-            "sdat_url": sdat_url
+            "sdat_url": sdat_url,
+            "sdat_search_url": sdat_search_url,
+            "plats_url": plats_url,
         }
     }
 
@@ -313,9 +324,12 @@ def format_title_telegram_card(prop: Dict[str, Any], title_res: Dict[str, Any]) 
         msg += f"  • {c}\n"
 
     msg += f"\n🔗 *Direct Verification Portals:*\n"
-    msg += f"• [MDLandRec.net Portal]({title_res['links']['mdlandrec_url']}) (`{title_res['links']['mdlandrec_note']}`)\n"
+    msg += f"• [Live Parcel & Title Dossier (No Login)]({title_res['links']['dossier_url']})\n"
+    msg += f"• [MD Parcel Record (No Login)]({title_res['links']['sdat_url']})\n"
+    msg += f"• [SDAT Public Search Portal]({title_res['links'].get('sdat_search_url', 'https://sdat.dat.maryland.gov/RealProperty/Pages/default.aspx')})\n"
+    msg += f"• [MD Survey Plats (No Login)]({title_res['links'].get('plats_url', 'https://plats.msa.maryland.gov/')})\n"
     msg += f"• [Maryland Judiciary Case Search]({title_res['links']['judiciary_url']})\n"
-    msg += f"• [SDAT Assessment Record]({title_res['links']['sdat_url']})"
+    msg += f"• [MDLandRec Deeds (Free Login Req.)]({title_res['links']['mdlandrec_url']}) (`{title_res['links']['mdlandrec_note']}`)"
     
     return msg
 

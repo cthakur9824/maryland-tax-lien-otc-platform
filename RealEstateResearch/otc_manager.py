@@ -34,7 +34,7 @@ try:
 except ImportError:
     openpyxl = None
 
-from sdat_engine import search_maryland_property, COUNTY_JURS_MAP
+from sdat_engine import search_maryland_property, COUNTY_JURS_MAP, build_maryland_public_urls
 from title_search_engine import analyze_maryland_title
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -676,7 +676,7 @@ def enrich_and_grade_subset(new_records: List[Dict[str, Any]], max_sdat_lookups:
             "risk_factors": title_res["risk_factors"],
             "recommended_contingencies": title_res["recommended_contingencies"],
             "google_maps_url": prop.get("google_maps_url") or "",
-            "sdat_url": prop.get("sdat_web_url") or "https://sdat.dat.maryland.gov/RealProperty/Pages/default.aspx"
+            "sdat_url": build_maryland_public_urls(prop.get("account_id") or "", prop.get("sdat_web_url") or "")["sdat_web_url"]
         }
 
         target_key = f"grade_{grade_letter.lower()}"

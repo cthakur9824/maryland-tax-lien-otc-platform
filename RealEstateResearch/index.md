@@ -40,6 +40,7 @@ Welcome to the Real Estate Research Knowledge Base. This index is maintained by 
 * [[Zoning]] - Land use classifications and entitlement strategies for flipping land to builders.
 
 ## 📊 Synthesis & Portfolio Strategy
+* [[Portfolio - 2026 Tax Lien Certificates Owned]] - Active buyer ledger (`TSB1377784` / CHETAN SINGH THAKUR) tracking 16 confirmed Colorado 2026 tax lien certificates (9 Gunnison CO + 2 Gilpin CO + 5 Conejos CO totaling \$3,237.50 export face, \$688,849 actual roll value, 578.39 acres @ 13% interest), HB24-1056 deed option milestones, and county/SRI servicing contacts.
 * [[Real Estate Research Master Mind Map]] - Auto-synced multi-state research mind map & Obsidian Canvas hub covering Maryland (24 counties + Carroll FY26), Colorado (Conejos/Gilpin/Gunnison), Mid-Atlantic tax deeds (VA/DE/NJ), Indiana, land playbooks, and live automation.
 * [[Conejos County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] - Complete 174-parcel due diligence, Conejos County TylerHost & 2026 SLVGIS parcel polygon enrichment, 99 sub-\$1,000 Face Bid Grade A & B deals, 40–80 acre land-flip candidates, and severed mineral (5170) trap disqualifications for Conejos County, CO.
 * [[Gilpin County Colorado 2026 Tax Lien Sale - Underwriting Matrix]] - Complete 126-parcel due diligence, Gilpin InfoEnvoy 2026 Assessor & GIS valuation enrichment, 28 Grade A & B deals, rural acreage land-flip candidates, and mining/MRO trap disqualifications for Gilpin County, CO.
